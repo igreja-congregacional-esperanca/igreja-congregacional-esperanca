@@ -4,7 +4,7 @@ Site para produção na Vercel, com página estática em `index.html` e uma fun�
 
 A identidade verde/grafite, o logótipo, os ícones acessíveis do Instagram e YouTube e a galeria com cinco fotos da igreja estão integrados. No telemóvel, as fotos passam num carrossel horizontal com deslize, controlos anterior/próxima e indicador de posição; em ecrãs maiores, aparecem em grelha. As fotos vieram da categoria **Do proprietário** da ficha da igreja no Google Maps; veja `PHOTO_SOURCES.md`.
 
-A página inicial e a secção **Vídeos** mostram os seis vídeos mais recentes do canal. Cada gravação e cada transmissão detetada podem ser reproduzidas no player incorporado do site após a pessoa tocar em **Reproduzir**; o player não inicia automaticamente. Também há ligações para abrir o conteúdo no YouTube.
+A página inicial e a secção **Vídeos** mostram imediatamente seis prévias guardadas na página; em segundo plano, a lista consulta o feed para buscar novidades. Assim, miniaturas, títulos e botões de reprodução aparecem sem esperar pelo endpoint. Cada gravação e cada transmissão detetada podem ser reproduzidas no player incorporado após a pessoa tocar em **Reproduzir**; o player não inicia automaticamente. Também há ligações para abrir o conteúdo no YouTube.
 
 A listagem é consultada automaticamente a cada dois minutos e, sem chave API, a cache da Vercel é de 90 segundos. Assim, novos vídeos e o estado ao vivo costumam atualizar em cerca de 2–4 minutos depois de o YouTube os publicar/propagar, podendo a própria propagação do YouTube acrescentar atraso. Não é instantâneo nem exige editar o site. Não precisa de Supabase. Veja `YOUTUBE_INTEGRATION.md` para detalhes e configuração opcional da API.
 

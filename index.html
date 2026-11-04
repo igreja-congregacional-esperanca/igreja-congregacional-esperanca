@@ -72,7 +72,28 @@ article p{font-size:18px;margin:0 0 1.2em}
 .photo-card figcaption strong{display:block;color:var(--text);font-family:Lora,Georgia,serif;font-size:18px;margin-bottom:3px}
 .photo-credit{font-size:12px;color:var(--muted);margin:0 0 36px}
 .photo-credit a{color:var(--accent);font-weight:600}
-@media(max-width:620px){.photo-grid{grid-template-columns:1fr}}
+.youtube-section{margin:42px 0 10px}
+.youtube-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px}
+.youtube-card{display:flex;flex-direction:column;overflow:hidden;background:var(--surface);border:1px solid var(--line);border-radius:14px;transition:.15s}
+.youtube-card:hover{transform:translateY(-2px);border-color:var(--accent)}
+.youtube-thumb{position:relative;aspect-ratio:16/9;background:#111;overflow:hidden}
+.youtube-thumb img{display:block;width:100%;height:100%;object-fit:cover}
+.youtube-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:50px;height:36px;border-radius:10px;background:rgba(0,0,0,.75);color:#fff;display:grid;place-items:center;font-size:19px}
+.youtube-info{display:flex;flex:1;flex-direction:column;gap:8px;padding:14px 16px}
+.youtube-info h3{font-size:17px;line-height:1.35}
+.youtube-date,.youtube-note{font-size:13px;color:var(--muted)}
+.youtube-date{margin-top:auto;padding-top:4px}
+.youtube-note{margin:12px 0 0}
+.live-card{display:grid;grid-template-columns:minmax(180px,.9fr) 1.1fr;gap:18px;align-items:center;margin:0 0 20px;padding:14px;background:var(--surface);border:1px solid rgba(190,45,45,.4);border-radius:16px}
+.live-card[hidden]{display:none!important}
+.live-thumb{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px;background:#111}
+.live-copy h3{font-size:22px;margin:10px 0 5px}
+.live-copy p{margin:0 0 14px;color:var(--muted);font-size:14px}
+.live-pill{display:inline-flex;align-items:center;gap:8px;background:#bd2f2f;color:#fff;border-radius:999px;padding:5px 11px;font-size:11px;font-weight:700;letter-spacing:.08em}
+.live-dot{width:8px;height:8px;border-radius:50%;background:#fff;box-shadow:0 0 0 0 rgba(255,255,255,.7);animation:live-pulse 1.8s infinite}
+@keyframes live-pulse{70%{box-shadow:0 0 0 7px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
+@media(prefers-reduced-motion:reduce){.youtube-card{transition:none}.youtube-card:hover{transform:none}.live-dot{animation:none}}
+@media(max-width:620px){.photo-grid{grid-template-columns:1fr}.live-card{grid-template-columns:1fr}.live-copy h3{font-size:20px}}
 footer{margin-top:70px;background:var(--surface);border-top:1px solid var(--line);padding:44px 0 24px;font-size:14px;color:var(--muted)}
 .fcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:32px}
 footer h4{font-family:Lora,Georgia,serif;font-size:17px;color:var(--text);margin:0 0 10px}
@@ -86,7 +107,7 @@ footer p{margin:0 0 8px}
 <header class="main"><div class="wrap">
 <a class="brand" href="#inicio"><img class="brand-mark" src="https://files.manuscdn.com/user_upload_by_module/session_file/310519664062508219/KCKjSVTsQlyEBMwS.webp" alt="">Igreja Congregacional</a>
 <button class="menu" id="mb" aria-label="Menu">Menu</button>
-<nav id="nav"><a href="#inicio" data-r="inicio">Início</a><a href="#texto-base" data-r="texto-base">Texto-base</a><a href="#devocionais" data-r="devocionais">Devocionais</a><a href="#eventos" data-r="eventos">Eventos</a><a href="#sobre" data-r="sobre">Sobre</a></nav>
+<nav id="nav"><a href="#inicio" data-r="inicio">Início</a><a href="#texto-base" data-r="texto-base">Texto-base</a><a href="#devocionais" data-r="devocionais">Devocionais</a><a href="#videos" data-r="videos">Vídeos</a><a href="#eventos" data-r="eventos">Eventos</a><a href="#sobre" data-r="sobre">Sobre</a></nav>
 </div></header>
 <main class="wrap" id="app"></main>
 <footer><div class="wrap">
@@ -112,8 +133,16 @@ var app=document.getElementById("app"),nav=document.getElementById("nav"),filter
 function fmt(d){var m=["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"],p=d.split("-");return +p[2]+" "+m[+p[1]-1]+" "+p[0]}
 function card(p){return '<a class="card" href="#'+p.id+'"><span class="tag">'+p.c+'</span><h3>'+p.t+'</h3><p>'+p.x.split("\n")[0].slice(0,110)+'…</p><div class="meta">'+p.a+' · '+fmt(p.d)+'</div></a>'}
 function crumb(l){return '<div class="crumb"><a href="#inicio">Início</a> › '+l+'</div>'}
+function youtubeSection(){return '<section class="youtube-section" id="videos"><div class="sec"><h2>Vídeos recentes</h2><a href="https://www.youtube.com/@IECConjuntoEsperan%C3%A7a" target="_blank" rel="noopener noreferrer">Ver canal →</a></div><div id="youtube-live" class="live-card" hidden aria-live="polite"></div><div id="youtube-grid" class="youtube-grid" aria-live="polite"><p class="youtube-note">Carregando vídeos recentes…</p></div><p id="youtube-status" class="youtube-note" aria-live="polite">Novos vídeos aparecem aqui automaticamente.</p></section>'}
+var youtubeRefreshTimer=null,youtubeRequestPending=false;
+function escapeVideoText(value){return String(value||"").replace(/[&<>"']/g,function(ch){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[ch]})}
+function youtubeCard(video){var id=/^[A-Za-z0-9_-]{11}$/.test(video.id||"")?video.id:"";if(!id)return "";var title=escapeVideoText(video.title||"Vídeo recente"),date=video.publishedAt?new Date(video.publishedAt):null,dateText=date&&!isNaN(date.getTime())?new Intl.DateTimeFormat("pt-BR",{day:"numeric",month:"short",year:"numeric"}).format(date):"Vídeo recente";return '<a class="youtube-card" href="https://www.youtube.com/watch?v='+id+'" target="_blank" rel="noopener noreferrer"><div class="youtube-thumb"><img src="https://i.ytimg.com/vi/'+id+'/hqdefault.jpg" alt="Miniatura do vídeo: '+title+'" loading="lazy"><span class="youtube-play" aria-hidden="true">▶</span></div><div class="youtube-info"><h3>'+title+'</h3><span class="youtube-date">Publicado em '+dateText+'</span></div></a>'}
+function renderYouTube(data){var grid=document.getElementById("youtube-grid"),livePanel=document.getElementById("youtube-live"),status=document.getElementById("youtube-status");if(!grid)return;var videos=Array.isArray(data.videos)?data.videos:[],cards=videos.map(youtubeCard).filter(Boolean);grid.innerHTML=cards.length?cards.join(""):'<p class="youtube-note">'+(data.feedAvailable?"Ainda não há vídeos públicos recentes no canal.":"Não foi possível carregar os vídeos agora.")+'</p>';if(livePanel){var live=data.live,id=live&&/^[A-Za-z0-9_-]{11}$/.test(live.id||"")?live.id:"";if(data.liveStatus==="live"&&id){var title=escapeVideoText(live.title||"Transmissão da igreja");livePanel.hidden=false;livePanel.innerHTML='<img class="live-thumb" src="https://i.ytimg.com/vi/'+id+'/hqdefault.jpg" alt="Miniatura da transmissão ao vivo" loading="lazy"><div class="live-copy"><span class="live-pill"><span class="live-dot" aria-hidden="true"></span>AO VIVO</span><h3>Estamos ao vivo!</h3><p>'+title+'</p><a class="btn" href="https://www.youtube.com/watch?v='+id+'" target="_blank" rel="noopener noreferrer">Assistir à transmissão →</a></div>'}else{livePanel.hidden=true;livePanel.innerHTML=""}}if(status)status.textContent=data.liveStatus==="unknown"?"Não foi possível verificar a transmissão ao vivo neste momento.":"Vídeos atualizados automaticamente; a transmissão é verificada periodicamente."}
+function refreshYouTube(){if(youtubeRequestPending||!document.getElementById("youtube-grid"))return;youtubeRequestPending=true;fetch("/api/youtube",{headers:{Accept:"application/json"},cache:"no-store"}).then(function(response){if(!response.ok)throw new Error("YouTube indisponível");return response.json()}).then(renderYouTube).catch(function(){var grid=document.getElementById("youtube-grid"),status=document.getElementById("youtube-status");if(grid)grid.innerHTML='<p class="youtube-note">Não foi possível carregar os vídeos agora. <a href="https://www.youtube.com/@IECConjuntoEsperan%C3%A7a" target="_blank" rel="noopener noreferrer">Acesse o canal no YouTube →</a></p>';if(status)status.textContent="A lista será consultada novamente em instantes."}).then(function(){youtubeRequestPending=false})}
+function bindYouTube(){if(youtubeRefreshTimer){clearInterval(youtubeRefreshTimer);youtubeRefreshTimer=null}if(!document.getElementById("youtube-grid"))return;refreshYouTube();youtubeRefreshTimer=setInterval(refreshYouTube,120000)}
 function view(r){
  if(r==="texto-base")return crumb("Texto-base")+'<article><span class="tag">Texto-base da igreja</span><h1>Texto-base para a igreja</h1><div class="ref">'+FOUNDATION.ref+'</div>'+FOUNDATION.text.map(function(p){return "<p>"+p+"</p>"}).join("")+'<div class="meta">'+FOUNDATION.author+' · '+fmt(FOUNDATION.date)+'</div></article>';
+ if(r==="videos")return crumb("Vídeos")+'<h1 class="page-title">Vídeos do canal</h1><p class="lead">Mensagens, cultos e transmissões da Igreja Congregacional · Conjunto Esperança.</p>'+youtubeSection();
  if(r==="devocionais"){
   var cats=["Todos"].concat(POSTS.map(function(p){return p.c}).filter(function(v,i,a){return a.indexOf(v)===i}));
   var list=POSTS.filter(function(p){return filter==="Todos"||p.c===filter});
@@ -127,8 +156,12 @@ function view(r){
 function route(){
  var r=(location.hash||"#inicio").slice(1);
  app.innerHTML=view(r);
- [].forEach.call(nav.querySelectorAll("a"),function(a){a.classList.toggle("on",a.dataset.r===r||(a.dataset.r==="devocionais"&&POSTS.some(function(x){return x.id===r})))});
- nav.classList.remove("open");window.scrollTo(0,0);
+ if(r==="inicio"){
+  var latestHeading=[].filter.call(app.querySelectorAll(".sec h2"),function(h){return h.textContent.trim()==="Últimos devocionais"})[0];
+  if(latestHeading)latestHeading.parentNode.insertAdjacentHTML("beforebegin",youtubeSection());
+ }
+ [].forEach.call(nav.querySelectorAll("a"),function(a){a.classList.toggle("on",a.dataset.r===r||(a.dataset.r==="devocionais"&&POSTS.some(function(x){return x.id===r}))) });
+ nav.classList.remove("open");window.scrollTo(0,0);bindYouTube();
 }
 app.addEventListener("click",function(e){var b=e.target.closest("[data-c]");if(b){filter=b.dataset.c;app.innerHTML=view("devocionais")}});
 document.getElementById("mb").onclick=function(){nav.classList.toggle("open")};

@@ -1,4 +1,4 @@
-# Igreja Congregacional Conjunto Esperança
+# Igreja Evangélica Congregacional Conjunto Esperança
 
 Site para produção na Vercel: páginas HTML estáticas geradas por `node build.js` (sem framework nem dependências) e uma função serverless em `api/youtube.js`. O `vercel.json` já define o build (`node build.js`) e a saída (`public/`); em **Framework Preset** use **Other**. Defina a variável `SITE_URL` (ex.: `https://seudominio.com.br`) na Vercel para gerar `sitemap.xml`, links canônicos e a imagem de compartilhamento.
 

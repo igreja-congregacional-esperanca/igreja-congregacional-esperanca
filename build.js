@@ -11,7 +11,7 @@ const CHANNEL = 'https://www.youtube.com/@IECConjuntoEsperan%C3%A7a';
 const MAPS = 'https://www.google.com/maps/place/Igreja+Congregacional+%7C+Conjunto+Esperan%C3%A7a/data=!4m7!3m6!1s0x7c74df34c4511d1:0xc750b079627d6c!8m2!3d-3.8139266!4d-38.5900581!16s%2Fg%2F11ghdt_hyp?hl=pt-BR';
 
 const INSTAGRAM = 'https://www.instagram.com/conjuntoesperancaiec/';
-const BRAND = 'Igreja Congregacional Conjunto Esperança';
+const BRAND = 'Igreja Evangélica Congregacional Conjunto Esperança';
 const SHORT_BRAND = 'Conjunto Esperança'; // sufixo curto dos títulos de devocionais e Bíblia (o Google corta em ~60 caracteres)
 // Dados do local para o JSON-LD (Church). Mantenha iguais aos da ficha do Google Maps, do rodapé (src/footer.html) e de content/eventos.json.
 const CHURCH = {
@@ -25,7 +25,7 @@ const CHURCH = {
   // Só o culto de domingo (o de quarta está "a confirmar" em eventos.json e fica de fora até haver horário).
   hours: [{ day: 'Sunday', opens: '10:00', closes: '12:00' }]
 };
-const OG_ALT = 'Fachada da igreja e logotipo da Igreja Congregacional Conjunto Esperança, em Fortaleza';
+const OG_ALT = 'Fachada da igreja e logotipo da Igreja Evangélica Congregacional Conjunto Esperança, em Fortaleza';
 
 const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 // Corta texto para meta description sem partir palavra no meio.
@@ -119,9 +119,9 @@ function youtubeCard(v) {
 const youtubeSection = () => `<section class="youtube-section" id="videos"><div class="sec"><h2>Vídeos recentes</h2><a href="${CHANNEL}" target="_blank" rel="noopener noreferrer">Ver canal →</a></div><div id="youtube-live" class="live-card" hidden aria-live="polite"></div><div id="youtube-grid" class="youtube-grid" aria-live="polite">${videos.map(youtubeCard).join('')}</div><p id="youtube-status" class="youtube-note" aria-live="polite">Prévia dos vídeos recentes; a lista está sendo atualizada.</p><script type="application/json" id="yt-initial">${JSON.stringify(videos).replace(/</g, '\\u003c')}</script></section>`;
 
 const GALLERY = [
-  { base: 'santuario-google-maps', widths: [480, 640], w: 640, h: 853, alt: 'Espaço de culto da Igreja Congregacional no Conjunto Esperança', t: 'Nosso espaço de culto', c: 'Um lugar de comunhão e adoração.' },
+  { base: 'santuario-google-maps', widths: [480, 640], w: 640, h: 853, alt: 'Espaço de culto da Igreja Evangélica Congregacional no Conjunto Esperança', t: 'Nosso espaço de culto', c: 'Um lugar de comunhão e adoração.' },
   { base: 'assentos-google-maps', widths: [360], w: 360, h: 640, alt: 'Assentos e interior do espaço de culto', t: 'Nosso espaço de culto', c: 'Um ambiente preparado para receber a comunidade.' },
-  { base: 'fachada-google-maps', widths: [480, 640], w: 640, h: 853, alt: 'Fachada da Igreja Congregacional do Conjunto Esperança em Fortaleza', t: 'Nossa igreja', c: 'Estamos na Rua 104, nº 227, em Fortaleza.' },
+  { base: 'fachada-google-maps', widths: [480, 640], w: 640, h: 853, alt: 'Fachada da Igreja Evangélica Congregacional do Conjunto Esperança em Fortaleza', t: 'Nossa igreja', c: 'Estamos na Rua 104, nº 227, em Fortaleza.' },
   { base: 'santuario-alternativo-google-maps', widths: [480, 640], w: 640, h: 853, alt: 'Vista alternativa do santuário da igreja', t: 'Espaço de culto', c: 'Nosso lugar de encontro e adoração.' },
   { base: 'fachada-noite-google-maps', widths: [480], w: 480, h: 640, alt: 'Fachada da igreja iluminada à noite', t: 'Nossa igreja à noite', c: 'Esperamos por você no Conjunto Esperança.' }
 ];
@@ -147,20 +147,20 @@ const visitSection = () => `<section id="visite"><div class="sec"><h2>Venha nos 
 
 addPage({
   url: '/', active: 'inicio', head: REDIRECT,
-  title: 'Igreja Congregacional em Fortaleza · Conjunto Esperança', desc: 'Igreja Congregacional no Conjunto Esperança, em Fortaleza (CE). Culto aos domingos, das 10h às 12h, devocionais, vídeos e Bíblia online.',
-  body: `<section class="hero"><small>Igreja Congregacional · Conjunto Esperança · Fortaleza</small><h1>Tudo para a glória de Deus, no culto e na vida.</h1><p>Devocionais e reflexões da nossa igreja, fundamentados nas Escrituras e centrados em Cristo.</p><a class="btn" href="/devocionais/">Ler devocionais</a><a class="btn ghost" href="/eventos/">Ver cultos</a></section>` +
+  title: 'Igreja Evangélica Congregacional Conjunto Esperança · Fortaleza', desc: 'Igreja Evangélica Congregacional no Conjunto Esperança, em Fortaleza (CE). Culto aos domingos, das 10h às 12h, devocionais, vídeos e Bíblia online.',
+  body: `<section class="hero"><small>Igreja Evangélica Congregacional · Conjunto Esperança · Fortaleza</small><h1>Tudo para a glória de Deus, no culto e na vida.</h1><p>Devocionais e reflexões da nossa igreja, fundamentados nas Escrituras e centrados em Cristo.</p><a class="btn" href="/devocionais/">Ler devocionais</a><a class="btn ghost" href="/eventos/">Ver cultos</a></section>` +
     visitSection() +
     `<div class="sec"><h2>Texto-base da igreja</h2><a href="/texto-base/">Ler texto-base →</a></div><div class="card" style="margin-bottom:36px"><span class="tag">${esc(foundation.ref)}</span><h3>Texto-base para a igreja</h3><p>${esc(foundation.text[0])}</p><div class="meta">${esc(foundation.author)} · ${fmt(foundation.date)}</div></div>` +
     `<div class="sec"><h2>A igreja em imagens</h2><a href="${MAPS}" target="_blank" rel="noopener noreferrer">Ver perfil no Google Maps →</a></div>${gallery()}` +
     youtubeSection() + `<div class="sec"><h2>Últimos devocionais</h2><a href="/devocionais/">Ver todos →</a></div><div class="grid">${posts.slice(0, 3).map(card).join('')}</div>`
 });
 addPage({
-  url: '/texto-base/', active: 'texto-base', title: 'Texto-base · Igreja Congregacional Conjunto Esperança', desc: clip(foundation.text[0], 155),
+  url: '/texto-base/', active: 'texto-base', title: 'Texto-base · ' + SHORT_BRAND, desc: clip(foundation.text[0], 155),
   body: `${crumb('Texto-base')}<article><span class="tag">Texto-base da igreja</span><h1>Texto-base para a igreja</h1><div class="ref">${refHtml(foundation.ref)}</div>${foundation.text.map((p) => `<p>${esc(p)}</p>`).join('')}<div class="meta">${esc(foundation.author)} · ${fmt(foundation.date)}</div></article>`
 });
 const cats = ['Todos'].concat(posts.map((p) => p.cat).filter((v, i, a) => a.indexOf(v) === i));
 addPage({
-  url: '/devocionais/', active: 'devocionais', title: 'Devocionais · Igreja Congregacional Conjunto Esperança', desc: 'Palavras curtas para alimentar a sua fé a cada semana.',
+  url: '/devocionais/', active: 'devocionais', title: 'Devocionais · ' + SHORT_BRAND, desc: 'Palavras curtas para alimentar a sua fé a cada semana.',
   body: `${crumb('Devocionais')}<h1 class="page-title">Devocionais</h1><p class="lead">Palavras curtas para alimentar a sua fé a cada semana.</p><div class="filters" hidden>${cats.map((c, i) => `<button type="button" class="${i === 0 ? 'on' : ''}" data-c="${esc(c)}">${esc(c)}</button>`).join('')}</div><div class="grid">${posts.map(card).join('')}</div>`
 });
 posts.forEach((p) => addPage({
@@ -169,11 +169,11 @@ posts.forEach((p) => addPage({
   body: `<article><a class="back" href="/devocionais/">← Todos os devocionais</a><div style="margin-top:22px"><span class="tag">${esc(p.cat)}</span></div><h1>${esc(p.title)}</h1><div class="meta" style="margin-bottom:6px">${esc(p.author)} · ${fmt(p.date)}</div><div class="ref">${refHtml(p.ref)}</div>${p.paragraphs.map((x) => `<p>${esc(x)}</p>`).join('')}</article>`
 }));
 addPage({
-  url: '/videos/', active: 'videos', title: 'Vídeos · Igreja Congregacional Conjunto Esperança', desc: 'Mensagens, cultos e transmissões da Igreja Congregacional Conjunto Esperança.',
-  body: `${crumb('Vídeos')}<h1 class="page-title">Vídeos do canal</h1><p class="lead">Mensagens, cultos e transmissões da Igreja Congregacional Conjunto Esperança.</p>${youtubeSection()}`
+  url: '/videos/', active: 'videos', title: 'Vídeos · ' + SHORT_BRAND, desc: 'Mensagens, cultos e transmissões da Igreja Evangélica Congregacional Conjunto Esperança.',
+  body: `${crumb('Vídeos')}<h1 class="page-title">Vídeos do canal</h1><p class="lead">Mensagens, cultos e transmissões da Igreja Evangélica Congregacional Conjunto Esperança.</p>${youtubeSection()}`
 });
 addPage({
-  url: '/eventos/', active: 'eventos', title: 'Cultos e eventos · Igreja Congregacional Conjunto Esperança', desc: 'Horários dos cultos e endereço: R. 104, 227 — Conjunto Esperança, Fortaleza.',
+  url: '/eventos/', active: 'eventos', title: 'Cultos e eventos · ' + SHORT_BRAND, desc: 'Horários dos cultos e endereço: R. 104, 227 — Conjunto Esperança, Fortaleza.',
   body: `${crumb('Eventos')}<h1 class="page-title">Eventos e cultos</h1><p class="lead">Venha nos visitar, você é bem-vindo.</p><div class="grid">${events.map(eventCard).join('')}</div>`
 });
 
@@ -189,7 +189,7 @@ const bibleCrumb = (...parts) => `<div class="crumb"><a href="/">Início</a> ›
 const bookGrid = (list) => `<div class="book-grid">${list.map((b) => `<a href="/biblia/${b.abbr}/">${esc(b.name)}</a>`).join('')}</div>`;
 addPage({
   url: '/biblia/', active: 'biblia', head: '',
-  title: 'Bíblia online · Igreja Congregacional Conjunto Esperança', desc: 'Leia a Bíblia no site: Almeida Revista e Corrigida (edição de 1911), do Gênesis ao Apocalipse.',
+  title: 'Bíblia online · ' + SHORT_BRAND, desc: 'Leia a Bíblia no site: Almeida Revista e Corrigida (edição de 1911), do Gênesis ao Apocalipse.',
   body: `${crumb('Bíblia')}<h1 class="page-title">Bíblia</h1><p class="lead">Leia as Escrituras sem sair do site.</p>${versionBadge}` +
     `<form class="bible-jump" id="bible-jump" hidden><label for="bible-q">Ir para a passagem</label><div><input id="bible-q" type="text" placeholder="Ex.: Salmos 119.105" autocomplete="off" list="bible-books"><button class="btn" type="submit">Ir</button></div><p id="bible-err" class="bible-err" role="alert" hidden>Não encontrei essa passagem. Tente, por exemplo, “João 3.16”.</p></form>` +
     `<datalist id="bible-books">${BOOK_LIST.map((b) => `<option value="${esc(b.name)}">`).join('')}</datalist>` +
@@ -221,7 +221,7 @@ const churchLd = () => ({
   '@type': 'Church',
   '@id': SITE + '/#igreja',
   name: BRAND,
-  alternateName: ['Igreja Evangélica Congregacional Conjunto Esperança', 'IEC Conjunto Esperança'],
+  alternateName: ['Igreja Congregacional Conjunto Esperança', 'IEC Conjunto Esperança'],
   url: SITE + '/',
   logo: SITE + '/logo-igreja.webp',
   image: [SITE + '/og-image.jpg', SITE + '/assets/fachada-google-maps-640.webp'],
@@ -301,7 +301,7 @@ ${ld}
 </head>
 <body>
 ${top}<header class="main"><div class="wrap">
-<a class="brand" href="/"><img class="brand-mark" src="/assets/${logoName}" width="34" height="34" alt=""><span class="brand-name">Igreja Congregacional<small>Conjunto Esperança</small></span></a>
+<a class="brand" href="/"><img class="brand-mark" src="/assets/${logoName}" width="34" height="34" alt=""><span class="brand-name">Igreja Evangélica Congregacional<small>Conjunto Esperança</small></span></a>
 <button class="menu" id="mb" aria-label="Menu" aria-controls="nav" aria-expanded="false">Menu</button>
 <nav id="nav">${nav}</nav>
 </div></header>

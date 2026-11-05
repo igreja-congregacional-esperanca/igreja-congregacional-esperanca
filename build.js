@@ -10,7 +10,32 @@ const SITE = (process.env.SITE_URL || (process.env.VERCEL_PROJECT_PRODUCTION_URL
 const CHANNEL = 'https://www.youtube.com/@IECConjuntoEsperan%C3%A7a';
 const MAPS = 'https://www.google.com/maps/place/Igreja+Congregacional+%7C+Conjunto+Esperan%C3%A7a/data=!4m7!3m6!1s0x7c74df34c4511d1:0xc750b079627d6c!8m2!3d-3.8139266!4d-38.5900581!16s%2Fg%2F11ghdt_hyp?hl=pt-BR';
 
+const INSTAGRAM = 'https://www.instagram.com/conjuntoesperancaiec/';
+const BRAND = 'Igreja Evangélica Congregacional Conjunto Esperança';
+const SHORT_BRAND = 'Conjunto Esperança'; // sufixo curto dos títulos de devocionais e Bíblia (o Google corta em ~60 caracteres)
+// Dados do local para o JSON-LD (Church). Mantenha iguais aos da ficha do Google Maps, do rodapé (src/footer.html) e de content/eventos.json.
+const CHURCH = {
+  phone: '+55 85 98768-6622',
+  street: 'R. 104, 227',
+  city: 'Fortaleza',
+  region: 'CE',
+  postalCode: '60763-474',
+  lat: -3.8139266,
+  lng: -38.5900581,
+  // Só o culto de domingo (o de quarta está "a confirmar" em eventos.json e fica de fora até haver horário).
+  hours: [{ day: 'Sunday', opens: '10:00', closes: '12:00' }]
+};
+const OG_ALT = 'Fachada da igreja e logotipo da Igreja Evangélica Congregacional Conjunto Esperança, em Fortaleza';
+
 const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+// Corta texto para meta description sem partir palavra no meio.
+const clip = (s, n) => {
+  s = String(s).replace(/\s+/g, ' ').trim();
+  if (s.length <= n) return s;
+  const cut = s.slice(0, n - 1);
+  const sp = cut.lastIndexOf(' ');
+  return (sp > n * 0.6 ? cut.slice(0, sp) : cut).replace(/[\s,;:.–—-]+$/, '') + '…';
+};
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
 const json = (f) => JSON.parse(read(f));
 const MONTHS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
@@ -94,9 +119,9 @@ function youtubeCard(v) {
 const youtubeSection = () => `<section class="youtube-section" id="videos"><div class="sec"><h2>Vídeos recentes</h2><a href="${CHANNEL}" target="_blank" rel="noopener noreferrer">Ver canal →</a></div><div id="youtube-live" class="live-card" hidden aria-live="polite"></div><div id="youtube-grid" class="youtube-grid" aria-live="polite">${videos.map(youtubeCard).join('')}</div><p id="youtube-status" class="youtube-note" aria-live="polite">Prévia dos vídeos recentes; a lista está sendo atualizada.</p><script type="application/json" id="yt-initial">${JSON.stringify(videos).replace(/</g, '\\u003c')}</script></section>`;
 
 const GALLERY = [
-  { base: 'santuario-google-maps', widths: [480, 640], w: 640, h: 853, alt: 'Espaço de culto da Igreja Congregacional no Conjunto Esperança', t: 'Nosso espaço de culto', c: 'Um lugar de comunhão e adoração.' },
+  { base: 'santuario-google-maps', widths: [480, 640], w: 640, h: 853, alt: 'Espaço de culto da Igreja Evangélica Congregacional no Conjunto Esperança', t: 'Nosso espaço de culto', c: 'Um lugar de comunhão e adoração.' },
   { base: 'assentos-google-maps', widths: [360], w: 360, h: 640, alt: 'Assentos e interior do espaço de culto', t: 'Nosso espaço de culto', c: 'Um ambiente preparado para receber a comunidade.' },
-  { base: 'fachada-google-maps', widths: [480, 640], w: 640, h: 853, alt: 'Fachada da Igreja Congregacional do Conjunto Esperança em Fortaleza', t: 'Nossa igreja', c: 'Estamos na Rua 104, nº 227, em Fortaleza.' },
+  { base: 'fachada-google-maps', widths: [480, 640], w: 640, h: 853, alt: 'Fachada da Igreja Evangélica Congregacional do Conjunto Esperança em Fortaleza', t: 'Nossa igreja', c: 'Estamos na Rua 104, nº 227, em Fortaleza.' },
   { base: 'santuario-alternativo-google-maps', widths: [480, 640], w: 640, h: 853, alt: 'Vista alternativa do santuário da igreja', t: 'Espaço de culto', c: 'Nosso lugar de encontro e adoração.' },
   { base: 'fachada-noite-google-maps', widths: [480], w: 480, h: 640, alt: 'Fachada da igreja iluminada à noite', t: 'Nossa igreja à noite', c: 'Esperamos por você no Conjunto Esperança.' }
 ];
@@ -114,36 +139,42 @@ const gallery = () => {
 const pages = [];
 const REDIRECT = `<script>(function(){var h=location.hash.slice(1);if(!h)return;var m={"texto-base":"/texto-base/","devocionais":"/devocionais/","videos":"/videos/","eventos":"/eventos/"};var s=${JSON.stringify(posts.map((p) => p.slug))};if(m[h])location.replace(m[h]);else if(s.indexOf(h)>-1)location.replace("/devocionais/"+h+"/")})()</script>`;
 
-function addPage({ url, title, desc, active, body, head = '' }) { pages.push({ url, title, desc, active, body, head }); }
+// `article` ({ date, author, cat }) marca devocionais: gera og:type=article e JSON-LD Article.
+function addPage({ url, title, desc, active, body, head = '', article = null }) { pages.push({ url, title, desc, active, body, head, article }); }
+
+const eventCard = (e) => `<div class="card"><span class="tag">${esc(e.dia)}</span><h3>${esc(e.titulo)}</h3><div class="meta">${esc(e.detalhe)}</div></div>`;
+const visitSection = () => `<section id="visite"><div class="sec"><h2>Venha nos visitar</h2><a href="${MAPS}" target="_blank" rel="noopener noreferrer">Como chegar →</a></div><div class="grid">${events.map(eventCard).join('')}<div class="card"><span class="tag">Endereço</span><h3>${esc(CHURCH.street)}</h3><div class="meta">Conjunto Esperança · ${esc(CHURCH.city)} — ${esc(CHURCH.region)}, ${esc(CHURCH.postalCode)}</div></div></div></section>`;
 
 addPage({
   url: '/', active: 'inicio', head: REDIRECT,
-  title: 'Igreja Congregacional Conjunto Esperança', desc: 'Igreja Congregacional Conjunto Esperança, em Fortaleza. Devocionais, vídeos dos cultos, horários e endereço.',
-  body: `<section class="hero"><small>Conjunto Esperança · Fortaleza</small><h1>Tudo para a glória de Deus, no culto e na vida.</h1><p>Devocionais e reflexões da nossa igreja, fundamentados nas Escrituras e centrados em Cristo.</p><a class="btn" href="/devocionais/">Ler devocionais</a><a class="btn ghost" href="/eventos/">Ver cultos</a></section>` +
+  title: 'Igreja Evangélica Congregacional Conjunto Esperança · Fortaleza', desc: 'Igreja Evangélica Congregacional no Conjunto Esperança, em Fortaleza (CE). Culto aos domingos, das 10h às 12h, devocionais, vídeos e Bíblia online.',
+  body: `<section class="hero"><small>Igreja Evangélica Congregacional · Conjunto Esperança · Fortaleza</small><h1>Tudo para a glória de Deus, no culto e na vida.</h1><p>Devocionais e reflexões da nossa igreja, fundamentados nas Escrituras e centrados em Cristo.</p><a class="btn" href="/devocionais/">Ler devocionais</a><a class="btn ghost" href="/eventos/">Ver cultos</a></section>` +
+    visitSection() +
     `<div class="sec"><h2>Texto-base da igreja</h2><a href="/texto-base/">Ler texto-base →</a></div><div class="card" style="margin-bottom:36px"><span class="tag">${esc(foundation.ref)}</span><h3>Texto-base para a igreja</h3><p>${esc(foundation.text[0])}</p><div class="meta">${esc(foundation.author)} · ${fmt(foundation.date)}</div></div>` +
     `<div class="sec"><h2>A igreja em imagens</h2><a href="${MAPS}" target="_blank" rel="noopener noreferrer">Ver perfil no Google Maps →</a></div>${gallery()}` +
     youtubeSection() + `<div class="sec"><h2>Últimos devocionais</h2><a href="/devocionais/">Ver todos →</a></div><div class="grid">${posts.slice(0, 3).map(card).join('')}</div>`
 });
 addPage({
-  url: '/texto-base/', active: 'texto-base', title: 'Texto-base · Igreja Congregacional Conjunto Esperança', desc: foundation.text[0].slice(0, 155),
+  url: '/texto-base/', active: 'texto-base', title: 'Texto-base · ' + SHORT_BRAND, desc: clip(foundation.text[0], 155),
   body: `${crumb('Texto-base')}<article><span class="tag">Texto-base da igreja</span><h1>Texto-base para a igreja</h1><div class="ref">${refHtml(foundation.ref)}</div>${foundation.text.map((p) => `<p>${esc(p)}</p>`).join('')}<div class="meta">${esc(foundation.author)} · ${fmt(foundation.date)}</div></article>`
 });
 const cats = ['Todos'].concat(posts.map((p) => p.cat).filter((v, i, a) => a.indexOf(v) === i));
 addPage({
-  url: '/devocionais/', active: 'devocionais', title: 'Devocionais · Igreja Congregacional Conjunto Esperança', desc: 'Palavras curtas para alimentar a sua fé a cada semana.',
+  url: '/devocionais/', active: 'devocionais', title: 'Devocionais · ' + SHORT_BRAND, desc: 'Palavras curtas para alimentar a sua fé a cada semana.',
   body: `${crumb('Devocionais')}<h1 class="page-title">Devocionais</h1><p class="lead">Palavras curtas para alimentar a sua fé a cada semana.</p><div class="filters" hidden>${cats.map((c, i) => `<button type="button" class="${i === 0 ? 'on' : ''}" data-c="${esc(c)}">${esc(c)}</button>`).join('')}</div><div class="grid">${posts.map(card).join('')}</div>`
 });
 posts.forEach((p) => addPage({
-  url: `/devocionais/${p.slug}/`, active: 'devocionais', title: `${p.title} · Devocional · Igreja Congregacional Conjunto Esperança`, desc: p.paragraphs[0].slice(0, 155),
+  url: `/devocionais/${p.slug}/`, active: 'devocionais', title: `${p.title} · Devocional · ${SHORT_BRAND}`, desc: clip(p.paragraphs[0], 155),
+  article: { date: p.date, author: p.author, cat: p.cat },
   body: `<article><a class="back" href="/devocionais/">← Todos os devocionais</a><div style="margin-top:22px"><span class="tag">${esc(p.cat)}</span></div><h1>${esc(p.title)}</h1><div class="meta" style="margin-bottom:6px">${esc(p.author)} · ${fmt(p.date)}</div><div class="ref">${refHtml(p.ref)}</div>${p.paragraphs.map((x) => `<p>${esc(x)}</p>`).join('')}</article>`
 }));
 addPage({
-  url: '/videos/', active: 'videos', title: 'Vídeos · Igreja Congregacional Conjunto Esperança', desc: 'Mensagens, cultos e transmissões da Igreja Congregacional Conjunto Esperança.',
-  body: `${crumb('Vídeos')}<h1 class="page-title">Vídeos do canal</h1><p class="lead">Mensagens, cultos e transmissões da Igreja Congregacional Conjunto Esperança.</p>${youtubeSection()}`
+  url: '/videos/', active: 'videos', title: 'Vídeos · ' + SHORT_BRAND, desc: 'Mensagens, cultos e transmissões da Igreja Evangélica Congregacional Conjunto Esperança.',
+  body: `${crumb('Vídeos')}<h1 class="page-title">Vídeos do canal</h1><p class="lead">Mensagens, cultos e transmissões da Igreja Evangélica Congregacional Conjunto Esperança.</p>${youtubeSection()}`
 });
 addPage({
-  url: '/eventos/', active: 'eventos', title: 'Cultos e eventos · Igreja Congregacional Conjunto Esperança', desc: 'Horários dos cultos e endereço: R. 104, 227 — Conjunto Esperança, Fortaleza.',
-  body: `${crumb('Eventos')}<h1 class="page-title">Eventos e cultos</h1><p class="lead">Venha nos visitar, você é bem-vindo.</p><div class="grid">${events.map((e) => `<div class="card"><span class="tag">${esc(e.dia)}</span><h3>${esc(e.titulo)}</h3><div class="meta">${esc(e.detalhe)}</div></div>`).join('')}</div>`
+  url: '/eventos/', active: 'eventos', title: 'Cultos e eventos · ' + SHORT_BRAND, desc: 'Horários dos cultos e endereço: R. 104, 227 — Conjunto Esperança, Fortaleza.',
+  body: `${crumb('Eventos')}<h1 class="page-title">Eventos e cultos</h1><p class="lead">Venha nos visitar, você é bem-vindo.</p><div class="grid">${events.map(eventCard).join('')}</div>`
 });
 
 // ---------- leitor da Bíblia (Almeida Revista e Corrigida, edição de 1911, domínio público) ----------
@@ -158,7 +189,7 @@ const bibleCrumb = (...parts) => `<div class="crumb"><a href="/">Início</a> ›
 const bookGrid = (list) => `<div class="book-grid">${list.map((b) => `<a href="/biblia/${b.abbr}/">${esc(b.name)}</a>`).join('')}</div>`;
 addPage({
   url: '/biblia/', active: 'biblia', head: '',
-  title: 'Bíblia online · Igreja Congregacional Conjunto Esperança', desc: 'Leia a Bíblia no site: Almeida Revista e Corrigida (edição de 1911), do Gênesis ao Apocalipse.',
+  title: 'Bíblia online · ' + SHORT_BRAND, desc: 'Leia a Bíblia no site: Almeida Revista e Corrigida (edição de 1911), do Gênesis ao Apocalipse.',
   body: `${crumb('Bíblia')}<h1 class="page-title">Bíblia</h1><p class="lead">Leia as Escrituras sem sair do site.</p>${versionBadge}` +
     `<form class="bible-jump" id="bible-jump" hidden><label for="bible-q">Ir para a passagem</label><div><input id="bible-q" type="text" placeholder="Ex.: Salmos 119.105" autocomplete="off" list="bible-books"><button class="btn" type="submit">Ir</button></div><p id="bible-err" class="bible-err" role="alert" hidden>Não encontrei essa passagem. Tente, por exemplo, “João 3.16”.</p></form>` +
     `<datalist id="bible-books">${BOOK_LIST.map((b) => `<option value="${esc(b.name)}">`).join('')}</datalist>` +
@@ -167,7 +198,7 @@ addPage({
 });
 BOOK_LIST.forEach((b, bi) => {
   addPage({
-    url: `/biblia/${b.abbr}/`, active: 'biblia', title: `${b.name} · Bíblia · Igreja Congregacional Conjunto Esperança`, desc: `${b.name}: ${b.chapters.length} capítulo(s). Almeida Revista e Corrigida (edição de 1911).`,
+    url: `/biblia/${b.abbr}/`, active: 'biblia', title: `${b.name} · Bíblia · ${SHORT_BRAND}`, desc: `${b.name}: ${b.chapters.length} capítulo(s). Almeida Revista e Corrigida (edição de 1911).`,
     body: `${bibleCrumb(esc(b.name))}<h1 class="page-title">${esc(b.name)}</h1><p class="lead">${b.chapters.length} capítulo${b.chapters.length > 1 ? 's' : ''}</p>${versionBadge}<div class="chapter-grid">${b.chapters.map((_, ci) => `<a href="/biblia/${b.abbr}/${ci + 1}/">${ci + 1}</a>`).join('')}</div>${BIBLE_NOTE}`
   });
   b.chapters.forEach((verses, ci) => {
@@ -176,16 +207,78 @@ BOOK_LIST.forEach((b, bi) => {
     const next = ci < b.chapters.length - 1 ? { u: `/biblia/${b.abbr}/${n + 1}/`, t: `${b.name} ${n + 1}` } : bi < BOOK_LIST.length - 1 ? { u: `/biblia/${BOOK_LIST[bi + 1].abbr}/1/`, t: `${BOOK_LIST[bi + 1].name} 1` } : null;
     const pager = `<div class="bible-pager">${prev ? `<a href="${prev.u}" rel="prev">← ${esc(prev.t)}</a>` : '<span></span>'}<a href="/biblia/${b.abbr}/">Capítulos</a>${next ? `<a href="${next.u}" rel="next">${esc(next.t)} →</a>` : '<span></span>'}</div>`;
     addPage({
-      url: `/biblia/${b.abbr}/${n}/`, active: 'biblia', title: `${b.name} ${n} · Bíblia · Igreja Congregacional Conjunto Esperança`, desc: verses.slice(0, 2).join(' ').slice(0, 155),
+      url: `/biblia/${b.abbr}/${n}/`, active: 'biblia', title: `${b.name} ${n} · Bíblia · ${SHORT_BRAND}`, desc: `${b.name} ${n}: ` + clip(verses.join(' '), 155 - `${b.name} ${n}: `.length),
       body: `${bibleCrumb(`<a href="/biblia/${b.abbr}/">${esc(b.name)}</a>`, String(n))}<article class="bible-chapter"><h1>${esc(b.name)} ${n}</h1>${versionBadge}${verses.map((t, vi) => `<p class="verse" id="v${vi + 1}"><b>${vi + 1}</b> ${esc(t)}</p>`).join('')}</article>${pager}<p class="bible-note">Compare com a ARC atual: <a href="${BIBLE_BASE}/${b.abbr}/${n}" target="_blank" rel="noopener noreferrer">${esc(b.name)} ${n} no bibliaonline.com.br ↗</a></p>${BIBLE_NOTE}`
     });
   });
 });
 
+// ---------- SEO: dados estruturados (JSON-LD) e meta tags sociais ----------
+const pageByUrl = new Map(pages.map((p) => [p.url, p]));
+const labelOf = (p) => p.title.split(' · ')[0];
+const ldScript = (data) => `<script type="application/ld+json">${JSON.stringify(data).replace(/</g, '\\u003c')}</script>`;
+const churchLd = () => ({
+  '@type': 'Church',
+  '@id': SITE + '/#igreja',
+  name: BRAND,
+  alternateName: ['Igreja Congregacional Conjunto Esperança', 'IEC Conjunto Esperança'],
+  url: SITE + '/',
+  logo: SITE + '/logo-igreja.webp',
+  image: [SITE + '/og-image.jpg', SITE + '/assets/fachada-google-maps-640.webp'],
+  telephone: CHURCH.phone,
+  address: { '@type': 'PostalAddress', streetAddress: CHURCH.street, addressLocality: CHURCH.city, addressRegion: CHURCH.region, postalCode: CHURCH.postalCode, addressCountry: 'BR' },
+  geo: { '@type': 'GeoCoordinates', latitude: CHURCH.lat, longitude: CHURCH.lng },
+  hasMap: MAPS,
+  sameAs: [INSTAGRAM, CHANNEL],
+  openingHoursSpecification: CHURCH.hours.map((h) => ({ '@type': 'OpeningHoursSpecification', dayOfWeek: h.day, opens: h.opens, closes: h.closes }))
+});
+const websiteLd = () => ({ '@type': 'WebSite', '@id': SITE + '/#site', url: SITE + '/', name: BRAND, inLanguage: 'pt-BR', publisher: { '@id': SITE + '/#igreja' } });
+function breadcrumbLd(pg) {
+  const segs = pg.url.split('/').filter(Boolean);
+  const items = [{ name: 'Início', url: '/' }];
+  segs.forEach((_, i) => {
+    const u = '/' + segs.slice(0, i + 1).join('/') + '/';
+    const p = pageByUrl.get(u);
+    if (p) items.push({ name: labelOf(p), url: u });
+  });
+  return { '@type': 'BreadcrumbList', itemListElement: items.map((it, i) => ({ '@type': 'ListItem', position: i + 1, name: it.name, item: SITE + it.url })) };
+}
+const articleLd = (pg) => ({
+  '@type': 'Article',
+  headline: labelOf(pg),
+  description: pg.desc,
+  inLanguage: 'pt-BR',
+  datePublished: pg.article.date,
+  articleSection: pg.article.cat,
+  author: { '@type': 'Person', name: pg.article.author.replace(/^Pr\.?\s+/i, '') },
+  publisher: { '@type': 'Organization', name: BRAND, url: SITE + '/', logo: { '@type': 'ImageObject', url: SITE + '/logo-igreja.webp' } },
+  image: [SITE + '/og-image.jpg'],
+  mainEntityOfPage: { '@type': 'WebPage', '@id': SITE + pg.url }
+});
+
 function render(pg) {
-  const abs = (u) => (SITE ? SITE + u : u);
-  const ogImage = SITE ? `<meta property="og:image" content="${SITE}/logo-igreja.webp">` : '';
-  const canonical = SITE ? `<link rel="canonical" href="${SITE}${pg.url}">\n<meta property="og:url" content="${SITE}${pg.url}">` : '';
+  const indexable = !pg.noindex;
+  const canonical = SITE && indexable ? `<link rel="canonical" href="${SITE}${pg.url}">\n<meta property="og:url" content="${SITE}${pg.url}">` : '';
+  const robots = indexable ? '<meta name="robots" content="max-image-preview:large">' : '<meta name="robots" content="noindex">';
+  const social = indexable ? [
+    `<meta property="og:site_name" content="${esc(BRAND)}">`,
+    `<meta property="og:type" content="${pg.article ? 'article' : 'website'}">`,
+    '<meta property="og:locale" content="pt_BR">',
+    `<meta property="og:title" content="${esc(pg.title)}">`,
+    `<meta property="og:description" content="${esc(pg.desc)}">`
+  ] : [];
+  if (indexable && pg.article) social.push(`<meta property="article:published_time" content="${pg.article.date}">`, `<meta property="article:section" content="${esc(pg.article.cat)}">`);
+  if (indexable && SITE) {
+    social.push(
+      `<meta property="og:image" content="${SITE}/og-image.jpg">`, '<meta property="og:image:type" content="image/jpeg">', '<meta property="og:image:width" content="1200">', '<meta property="og:image:height" content="630">', `<meta property="og:image:alt" content="${esc(OG_ALT)}">`,
+      '<meta name="twitter:card" content="summary_large_image">', `<meta name="twitter:title" content="${esc(pg.title)}">`, `<meta name="twitter:description" content="${esc(pg.desc)}">`, `<meta name="twitter:image" content="${SITE}/og-image.jpg">`, `<meta name="twitter:image:alt" content="${esc(OG_ALT)}">`
+    );
+  }
+  let ld = '';
+  if (SITE && indexable) {
+    const graph = pg.url === '/' ? [websiteLd(), churchLd()] : [breadcrumbLd(pg)].concat(pg.article ? [articleLd(pg)] : []);
+    ld = ldScript({ '@context': 'https://schema.org', '@graph': graph });
+  }
   const nav = NAV.map(([href, label, key, external]) => `<a href="${href}"${key === pg.active ? ' class="on"' : ''}${external ? ' target="_blank" rel="noopener noreferrer" title="Abre a Bíblia online (ARC) em outro site"' : ''}>${label}${external ? ' ↗' : ''}</a>`).join('');
   return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -195,21 +288,20 @@ function render(pg) {
 <title>${esc(pg.title)}</title>
 <meta name="description" content="${esc(pg.desc)}">
 <meta name="theme-color" content="#398b26">
-<meta property="og:type" content="website">
-<meta property="og:locale" content="pt_BR">
-<meta property="og:title" content="${esc(pg.title)}">
-<meta property="og:description" content="${esc(pg.desc)}">
-${ogImage}
+${robots}
+${social.join('\n')}
 ${canonical}
-<link rel="icon" type="image/webp" href="/logo-simbolo.webp">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preload" href="/assets/fonts/inter-v20-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/lora-v37-latin.woff2" as="font" type="font/woff2" crossorigin>
 ${pg.url.startsWith('/biblia/') ? `<link rel="stylesheet" href="/assets/${cssName}">` : `<style>\n${css}\n</style>`}
 ${pg.head}
+${ld}
 </head>
 <body>
 ${top}<header class="main"><div class="wrap">
-<a class="brand" href="/"><img class="brand-mark" src="/assets/${logoName}" width="34" height="34" alt=""><span class="brand-name">Igreja Congregacional<small>Conjunto Esperança</small></span></a>
+<a class="brand" href="/"><img class="brand-mark" src="/assets/${logoName}" width="34" height="34" alt=""><span class="brand-name">Igreja Evangélica Congregacional<small>Conjunto Esperança</small></span></a>
 <button class="menu" id="mb" aria-label="Menu" aria-controls="nav" aria-expanded="false">Menu</button>
 <nav id="nav">${nav}</nav>
 </div></header>
@@ -225,7 +317,7 @@ ${footer}
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(path.join(OUT, 'assets'), { recursive: true });
 fs.cpSync(path.join(ROOT, 'assets'), path.join(OUT, 'assets'), { recursive: true });
-['logo-igreja.webp', 'logo-simbolo.webp'].forEach((f) => fs.copyFileSync(path.join(ROOT, f), path.join(OUT, f)));
+['logo-igreja.webp', 'logo-simbolo.webp', 'og-image.jpg', 'favicon.ico', 'apple-touch-icon.png'].forEach((f) => fs.copyFileSync(path.join(ROOT, f), path.join(OUT, f)));
 fs.copyFileSync(path.join(ROOT, 'logo-simbolo.webp'), path.join(OUT, 'assets', logoName));
 fs.writeFileSync(path.join(OUT, 'assets', appName), appJs);
 fs.writeFileSync(path.join(OUT, 'assets', cssName), css);
@@ -234,9 +326,21 @@ pages.forEach((pg) => {
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, 'index.html'), render(pg));
 });
+// Página 404 própria (a Vercel serve public/404.html para endereços inexistentes). Fica fora do sitemap e com noindex.
+fs.writeFileSync(path.join(OUT, '404.html'), render({
+  url: '/404.html', active: '', head: '', noindex: true, article: null,
+  title: `Página não encontrada · ${SHORT_BRAND}`, desc: 'A página procurada não existe ou mudou de endereço.',
+  body: `<div class="hero"><small>Erro 404</small><h1>Página não encontrada</h1><p>O endereço que você abriu não existe ou mudou. Veja os caminhos abaixo para continuar.</p><a class="btn" href="/">Ir para o início</a><a class="btn ghost" href="/devocionais/">Devocionais</a><a class="btn ghost" href="/biblia/">Bíblia</a></div>`
+}));
 fs.writeFileSync(path.join(OUT, 'robots.txt'), 'User-agent: *\nAllow: /\n' + (SITE ? `Sitemap: ${SITE}/sitemap.xml\n` : ''));
 if (SITE) {
-  const lastmod = (pg) => { const m = pg.url.match(/^\/devocionais\/([^/]+)\/$/); const p = m && posts.find((x) => x.slug === m[1]); return p ? `<lastmod>${p.date}</lastmod>` : ''; };
+  // lastmod só onde há data real (devocionais, texto-base, vídeos). Usar a data do build em tudo faria o Google ignorar o campo.
+  const day = (s) => String(s || '').slice(0, 10);
+  const newest = (list) => list.filter(Boolean).sort().pop() || '';
+  const videoDay = newest(videos.map((v) => day(v.publishedAt)));
+  const LASTMOD = { '/': newest([posts[0] && posts[0].date, foundation.date, videoDay]), '/texto-base/': foundation.date, '/devocionais/': posts[0] ? posts[0].date : '', '/videos/': videoDay };
+  posts.forEach((p) => { LASTMOD[`/devocionais/${p.slug}/`] = p.date; });
+  const lastmod = (pg) => (LASTMOD[pg.url] ? `<lastmod>${LASTMOD[pg.url]}</lastmod>` : '');
   fs.writeFileSync(path.join(OUT, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${pages.map((pg) => `<url><loc>${SITE}${pg.url}</loc>${lastmod(pg)}</url>`).join('\n')}\n</urlset>\n`);
 }
 console.log(`Site gerado em public/: ${pages.length} páginas${SITE ? '' : ' (sem SITE_URL: sitemap e links canônicos omitidos)'}.`);

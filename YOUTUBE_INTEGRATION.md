@@ -17,3 +17,7 @@ A deteção de live funciona sem chave através da página pública `/live`. Opc
 - [Canal oficial da igreja](https://www.youtube.com/@IECConjuntoEsperan%C3%A7a)
 - [Feed Atom público do canal](https://www.youtube.com/feeds/videos.xml?channel_id=UCSQl8zLsF2-LWAIQu01Ua6A)
 - [Documentação oficial do método YouTube Data API `search.list`](https://developers.google.com/youtube/data/reference/rest/v3/search/list)
+
+## Rotas e frequência
+
+`/api/youtube?part=videos` devolve só a lista (cache de 30 min) e `/api/youtube?part=live` só o estado da transmissão (cache de 90 s, ou 15 min com `YOUTUBE_API_KEY`). Sem `part`, devolve os dois, como antes. A página pausa as consultas quando a aba está escondida e consulta a live a cada 90 s nos horários de culto e a cada 5 min fora deles.

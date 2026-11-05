@@ -6,10 +6,10 @@ Ficha Google Maps: https://www.google.com/maps/place/Igreja+Congregacional+%7C+C
 
 ## Fotos da galeria
 
-- `assets/santuario-google-maps.webp` — vista principal do espaço de culto; fotografia de origem: https://lh3.googleusercontent.com/gps-cs-s/ANWiy9SlkIhFKJQcJ3uYytSnG7_OrKRzNg4Y_ca7B4Lte4tNvjWcgWGGBPcv4qz2LXyljeWNhJ48hxUHXZfnzdyJbqy-PlDC5NoTlU9sTuK-W_slBeN-CopOtqYk8ScseuFXnOlI4URrm0s2id0=w203-h270-k-no
-- `assets/assentos-google-maps.webp` — cadeiras/assentos do espaço de culto; imagem pública da categoria do proprietário.
-- `assets/fachada-google-maps.webp` — fachada diurna; imagem pública da categoria do proprietário.
-- `assets/santuario-alternativo-google-maps.webp` — outra vista do interior do santuário; imagem pública da categoria do proprietário.
-- `assets/fachada-noite-google-maps.webp` — fachada iluminada à noite; imagem pública da categoria do proprietário.
+- `assets/santuario-google-maps-{480,800}.webp` — vista principal do espaço de culto; fotografia de origem: https://lh3.googleusercontent.com/gps-cs-s/ANWiy9SlkIhFKJQcJ3uYytSnG7_OrKRzNg4Y_ca7B4Lte4tNvjWcgWGGBPcv4qz2LXyljeWNhJ48hxUHXZfnzdyJbqy-PlDC5NoTlU9sTuK-W_slBeN-CopOtqYk8ScseuFXnOlI4URrm0s2id0=w203-h270-k-no
+- `assets/assentos-google-maps-360.webp` — cadeiras/assentos do espaço de culto; imagem pública da categoria do proprietário.
+- `assets/fachada-google-maps-{480,800}.webp` — fachada diurna; imagem pública da categoria do proprietário.
+- `assets/santuario-alternativo-google-maps-{480,800}.webp` — outra vista do interior do santuário; imagem pública da categoria do proprietário.
+- `assets/fachada-noite-google-maps-480.webp` — fachada iluminada à noite; imagem pública da categoria do proprietário.
 
-As versões WebP mantêm a proporção integral da imagem de origem. No telemóvel, a galeria usa scroll horizontal com snap, controlos anterior/próxima e indicador de posição; em ecrãs maiores, continua em grelha.
+As versões WebP mantêm a proporção integral da imagem de origem e foram redimensionadas (480 e 800 px de largura) para carregar mais rápido; o nome do arquivo traz a largura, então ao trocar uma foto use um nome novo (o cache é de 1 ano). No celular, a galeria usa rolagem horizontal com encaixe, controles anterior/próxima e indicador de posição; em telas maiores, continua em grade.

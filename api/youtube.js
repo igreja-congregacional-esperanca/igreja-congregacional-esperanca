@@ -196,12 +196,47 @@ async function checkLive() {
   }
 }
 
+function sendJson(res, payload, cacheControl) {
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Cache-Control', cacheControl);
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  return res.end(JSON.stringify(payload));
+}
+
 module.exports = async function youtubeHandler(req, res) {
   if (req.method !== 'GET') {
     res.statusCode = 405;
     res.setHeader('Allow', 'GET');
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
     return res.end(JSON.stringify({ error: 'Method not allowed' }));
+  }
+
+  // ?part=videos -> só a lista (muda pouco, cache longo)
+  // ?part=live   -> só o estado da transmissão (cache curto)
+  // sem parâmetro -> os dois, como antes
+  let part = '';
+  try { part = new URL(req.url || '/', 'http://localhost').searchParams.get('part') || ''; } catch (_error) { part = ''; }
+
+  const liveCache = process.env.YOUTUBE_API_KEY
+    ? 'public, s-maxage=900, stale-while-revalidate=300'
+    : 'public, s-maxage=90, stale-while-revalidate=180';
+  const videosCache = 'public, s-maxage=1800, stale-while-revalidate=3600';
+
+  if (part === 'videos') {
+    let feedAvailable = true;
+    let videos = [];
+    try { videos = parseFeed(await fetchText(FEED_URL, 'application/atom+xml,application/xml,text/xml;q=0.9,*/*;q=0.8')); } catch (_error) { feedAvailable = false; }
+    return sendJson(res, { videos, feedAvailable, checkedAt: new Date().toISOString() }, feedAvailable ? videosCache : 'public, s-maxage=30');
+  }
+
+  if (part === 'live') {
+    const liveCheck = await checkLive().catch(() => ({ available: false, live: null }));
+    return sendJson(res, {
+      live: liveCheck.live,
+      liveStatus: liveCheck.available ? (liveCheck.live ? 'live' : 'offline') : 'unknown',
+      checkedAt: new Date().toISOString()
+    }, liveCache);
   }
 
   const [feedResult, liveResult] = await Promise.allSettled([
@@ -211,19 +246,11 @@ module.exports = async function youtubeHandler(req, res) {
   const feedAvailable = feedResult.status === 'fulfilled';
   const liveCheck = liveResult.status === 'fulfilled' ? liveResult.value : { available: false, live: null };
   const videos = feedAvailable ? parseFeed(feedResult.value) : [];
-  const payload = {
+  return sendJson(res, {
     videos,
     feedAvailable,
     live: liveCheck.live,
     liveStatus: liveCheck.available ? (liveCheck.live ? 'live' : 'offline') : 'unknown',
     checkedAt: new Date().toISOString()
-  };
-
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'application/json; charset=utf-8');
-  res.setHeader('Cache-Control', process.env.YOUTUBE_API_KEY
-    ? 'public, s-maxage=900, stale-while-revalidate=300'
-    : 'public, s-maxage=90, stale-while-revalidate=180');
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  return res.end(JSON.stringify(payload));
+  }, liveCache);
 };

@@ -133,3 +133,6 @@ article .ref a:hover{color:var(--accent)}
 .bible-err{color:#bd2f2f;font-size:13px;margin:8px 0 0}
 .brand-name{display:flex;flex-direction:column;line-height:1.15}
 .brand-name small{font:500 12px Inter,system-ui,sans-serif;color:var(--muted);letter-spacing:.02em;margin-top:2px}
+.bible-version{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin:0 0 18px;font-size:13px}
+.bible-version a{color:var(--accent);font-weight:600}
+.bible-about{margin:30px 0 10px;max-width:680px}

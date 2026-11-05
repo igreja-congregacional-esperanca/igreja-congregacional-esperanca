@@ -131,3 +131,5 @@ article .ref a:hover{color:var(--accent)}
 .bible-jump input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .bible-jump button{border:0;cursor:pointer;font:inherit;font-weight:600;font-size:14px}
 .bible-err{color:#bd2f2f;font-size:13px;margin:8px 0 0}
+.brand-name{display:flex;flex-direction:column;line-height:1.15}
+.brand-name small{font:500 12px Inter,system-ui,sans-serif;color:var(--muted);letter-spacing:.02em;margin-top:2px}

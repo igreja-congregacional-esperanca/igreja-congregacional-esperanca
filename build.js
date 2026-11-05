@@ -118,7 +118,7 @@ function addPage({ url, title, desc, active, body, head = '' }) { pages.push({ u
 
 addPage({
   url: '/', active: 'inicio', head: REDIRECT,
-  title: 'Igreja Congregacional · Conjunto Esperança', desc: 'Igreja Congregacional · Conjunto Esperança, em Fortaleza. Devocionais, vídeos dos cultos, horários e endereço.',
+  title: 'Igreja Congregacional Conjunto Esperança', desc: 'Igreja Congregacional Conjunto Esperança, em Fortaleza. Devocionais, vídeos dos cultos, horários e endereço.',
   body: `<section class="hero"><small>Conjunto Esperança · Fortaleza</small><h1>Tudo para a glória de Deus, no culto e na vida.</h1><p>Devocionais e reflexões da nossa igreja, fundamentados nas Escrituras e centrados em Cristo.</p><a class="btn" href="/devocionais/">Ler devocionais</a><a class="btn ghost" href="/eventos/">Ver cultos</a></section>` +
     `<div class="sec"><h2>Texto-base da igreja</h2><a href="/texto-base/">Ler texto-base →</a></div><div class="card" style="margin-bottom:36px"><span class="tag">${esc(foundation.ref)}</span><h3>Texto-base para a igreja</h3><p>${esc(foundation.text[0])}</p><div class="meta">${esc(foundation.author)} · ${fmt(foundation.date)}</div></div>` +
     `<div class="sec"><h2>A igreja em imagens</h2><a href="${MAPS}" target="_blank" rel="noopener noreferrer">Ver perfil no Google Maps →</a></div>${gallery()}` +
@@ -134,12 +134,12 @@ addPage({
   body: `${crumb('Devocionais')}<h1 class="page-title">Devocionais</h1><p class="lead">Palavras curtas para alimentar a sua fé a cada semana.</p><div class="filters" hidden>${cats.map((c, i) => `<button type="button" class="${i === 0 ? 'on' : ''}" data-c="${esc(c)}">${esc(c)}</button>`).join('')}</div><div class="grid">${posts.map(card).join('')}</div>`
 });
 posts.forEach((p) => addPage({
-  url: `/devocionais/${p.slug}/`, active: 'devocionais', title: `${p.title} · Devocional · Conjunto Esperança`, desc: p.paragraphs[0].slice(0, 155),
+  url: `/devocionais/${p.slug}/`, active: 'devocionais', title: `${p.title} · Devocional · Igreja Congregacional Conjunto Esperança`, desc: p.paragraphs[0].slice(0, 155),
   body: `<article><a class="back" href="/devocionais/">← Todos os devocionais</a><div style="margin-top:22px"><span class="tag">${esc(p.cat)}</span></div><h1>${esc(p.title)}</h1><div class="meta" style="margin-bottom:6px">${esc(p.author)} · ${fmt(p.date)}</div><div class="ref">${refHtml(p.ref)}</div>${p.paragraphs.map((x) => `<p>${esc(x)}</p>`).join('')}</article>`
 }));
 addPage({
-  url: '/videos/', active: 'videos', title: 'Vídeos · Igreja Congregacional Conjunto Esperança', desc: 'Mensagens, cultos e transmissões da Igreja Congregacional · Conjunto Esperança.',
-  body: `${crumb('Vídeos')}<h1 class="page-title">Vídeos do canal</h1><p class="lead">Mensagens, cultos e transmissões da Igreja Congregacional · Conjunto Esperança.</p>${youtubeSection()}`
+  url: '/videos/', active: 'videos', title: 'Vídeos · Igreja Congregacional Conjunto Esperança', desc: 'Mensagens, cultos e transmissões da Igreja Congregacional Conjunto Esperança.',
+  body: `${crumb('Vídeos')}<h1 class="page-title">Vídeos do canal</h1><p class="lead">Mensagens, cultos e transmissões da Igreja Congregacional Conjunto Esperança.</p>${youtubeSection()}`
 });
 addPage({
   url: '/eventos/', active: 'eventos', title: 'Cultos e eventos · Igreja Congregacional Conjunto Esperança', desc: 'Horários dos cultos e endereço: R. 104, 227 — Conjunto Esperança, Fortaleza.',
@@ -166,7 +166,7 @@ addPage({
 });
 BOOK_LIST.forEach((b, bi) => {
   addPage({
-    url: `/biblia/${b.abbr}/`, active: 'biblia', title: `${b.name} · Bíblia · Conjunto Esperança`, desc: `${b.name}: ${b.chapters.length} capítulo(s). Almeida Revista e Corrigida (edição de 1911).`,
+    url: `/biblia/${b.abbr}/`, active: 'biblia', title: `${b.name} · Bíblia · Igreja Congregacional Conjunto Esperança`, desc: `${b.name}: ${b.chapters.length} capítulo(s). Almeida Revista e Corrigida (edição de 1911).`,
     body: `${bibleCrumb(esc(b.name))}<h1 class="page-title">${esc(b.name)}</h1><p class="lead">${b.chapters.length} capítulo${b.chapters.length > 1 ? 's' : ''}</p><div class="chapter-grid">${b.chapters.map((_, ci) => `<a href="/biblia/${b.abbr}/${ci + 1}/">${ci + 1}</a>`).join('')}</div>${BIBLE_NOTE}`
   });
   b.chapters.forEach((verses, ci) => {
@@ -175,7 +175,7 @@ BOOK_LIST.forEach((b, bi) => {
     const next = ci < b.chapters.length - 1 ? { u: `/biblia/${b.abbr}/${n + 1}/`, t: `${b.name} ${n + 1}` } : bi < BOOK_LIST.length - 1 ? { u: `/biblia/${BOOK_LIST[bi + 1].abbr}/1/`, t: `${BOOK_LIST[bi + 1].name} 1` } : null;
     const pager = `<div class="bible-pager">${prev ? `<a href="${prev.u}" rel="prev">← ${esc(prev.t)}</a>` : '<span></span>'}<a href="/biblia/${b.abbr}/">Capítulos</a>${next ? `<a href="${next.u}" rel="next">${esc(next.t)} →</a>` : '<span></span>'}</div>`;
     addPage({
-      url: `/biblia/${b.abbr}/${n}/`, active: 'biblia', title: `${b.name} ${n} · Bíblia · Conjunto Esperança`, desc: verses.slice(0, 2).join(' ').slice(0, 155),
+      url: `/biblia/${b.abbr}/${n}/`, active: 'biblia', title: `${b.name} ${n} · Bíblia · Igreja Congregacional Conjunto Esperança`, desc: verses.slice(0, 2).join(' ').slice(0, 155),
       body: `${bibleCrumb(`<a href="/biblia/${b.abbr}/">${esc(b.name)}</a>`, String(n))}<article class="bible-chapter"><h1>${esc(b.name)} ${n}</h1>${verses.map((t, vi) => `<p class="verse" id="v${vi + 1}"><b>${vi + 1}</b> ${esc(t)}</p>`).join('')}</article>${pager}<p class="bible-note">Compare com a ARC atual: <a href="${BIBLE_BASE}/${b.abbr}/${n}" target="_blank" rel="noopener noreferrer">${esc(b.name)} ${n} no bibliaonline.com.br ↗</a></p>${BIBLE_NOTE}`
     });
   });
@@ -210,7 +210,7 @@ ${pg.head}
 </head>
 <body>
 ${top}<header class="main"><div class="wrap">
-<a class="brand" href="/"><img class="brand-mark" src="/logo-simbolo.webp" width="34" height="34" alt="">Igreja Congregacional</a>
+<a class="brand" href="/"><img class="brand-mark" src="/logo-simbolo.webp" width="34" height="34" alt=""><span class="brand-name">Igreja Congregacional<small>Conjunto Esperança</small></span></a>
 <button class="menu" id="mb" aria-label="Menu" aria-controls="nav" aria-expanded="false">Menu</button>
 <nav id="nav">${nav}</nav>
 </div></header>

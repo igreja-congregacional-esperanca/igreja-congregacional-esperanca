@@ -18,11 +18,16 @@ O conteúdo de Mateus 11.28 aparece numa seção própria como **Texto-base da i
 
 ## Arquivos principais
 
-- `build.js` — gera as páginas em `public/` (início, texto-base, devocionais, vídeos, eventos, sitemap e robots).
+- `build.js` — gera as páginas em `public/` (início, texto-base, devocionais, vídeos, eventos, Bíblia, sitemap e robots).
 - `content/` — textos: `devocionais/*.md`, `texto-base.json`, `eventos.json` e `videos.json` (prévias dos vídeos).
+- `content/biblia/` — texto da Bíblia (Almeida Revista e Corrigida, edição de 1911, domínio público); veja `content/biblia/LEIA-ME.md` para origem e cuidados. O `build.js` gera uma página por capítulo em `/biblia/<livro>/<capítulo>/`.
 - `src/` — `style.css`, `app.js` (menu, filtro, carrossel e YouTube), cabeçalho e rodapé.
 - `api/youtube.js` — feed de vídeos recentes e estado de transmissão ao vivo.
 - `assets/` — fotos da igreja em WebP (480/800 px; nomes com a largura, cache imutável).
 - `vercel.json` — build e cabeçalhos de cache.
 - `YOUTUBE_INTEGRATION.md` — funcionamento, referências e configuração da integração.
 - `PHOTO_SOURCES.md` — origem e referências das fotografias.
+
+## Bíblia no site
+
+A seção `/biblia/` traz a Bíblia inteira (1.189 capítulos), com busca de passagem (ex.: "João 3.16"). A referência bíblica de cada devocional (campo `referencia`) liga direto ao versículo no leitor. O texto é a edição de 1911 de Almeida, em domínio público, e **não** a ARC atual da Sociedade Bíblica do Brasil, que tem direitos reservados; cada capítulo traz um link para a ARC atual, para comparação.

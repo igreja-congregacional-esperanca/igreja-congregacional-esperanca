@@ -108,7 +108,7 @@ const logoName = 'logo-simbolo.' + hash(fs.readFileSync(path.join(ROOT, 'logo-si
 
 const NAV = [['/', 'Início', 'inicio'], ['/texto-base/', 'Texto-base', 'texto-base'], ['/devocionais/', 'Devocionais', 'devocionais'], ['/videos/', 'Vídeos', 'videos'], ['/eventos/', 'Eventos', 'eventos'], ['/biblia/', 'Bíblia', 'biblia'], ['/#sobre', 'Sobre', 'sobre']];
 const crumb = (label) => `<div class="crumb"><a href="/">Início</a> › ${label}</div>`;
-const card = (p) => `<a class="card" href="/devocionais/${p.slug}/" data-cat="${esc(p.cat)}"><span class="tag">${esc(p.cat)}</span><h3>${esc(p.title)}</h3><p>${esc(p.paragraphs[0].slice(0, 110))}…</p><div class="meta">${esc(p.author)} · ${fmt(p.date)}</div></a>`;
+const card = (p, h = 'h3') => `<a class="card" href="/devocionais/${p.slug}/" data-cat="${esc(p.cat)}"><span class="tag">${esc(p.cat)}</span><${h}>${esc(p.title)}</${h}><p>${esc(p.paragraphs[0].slice(0, 110))}…</p><div class="meta">${esc(p.author)} · ${fmt(p.date)}</div></a>`;
 
 function youtubeCard(v) {
   const id = v.id, title = esc(v.title || 'Vídeo recente');
@@ -142,8 +142,8 @@ const REDIRECT = `<script>(function(){var h=location.hash.slice(1);if(!h)return;
 // `article` ({ date, author, cat }) marca devocionais: gera og:type=article e JSON-LD Article.
 function addPage({ url, title, desc, active, body, head = '', article = null }) { pages.push({ url, title, desc, active, body, head, article }); }
 
-const eventCard = (e) => `<div class="card"><span class="tag">${esc(e.dia)}</span><h3>${esc(e.titulo)}</h3><div class="meta">${esc(e.detalhe)}</div></div>`;
-const visitSection = () => `<section id="visite"><div class="sec"><h2>Venha nos visitar</h2><a href="${MAPS}" target="_blank" rel="noopener noreferrer">Como chegar →</a></div><div class="grid">${events.map(eventCard).join('')}<div class="card"><span class="tag">Endereço</span><h3>${esc(CHURCH.street)}</h3><div class="meta">Conjunto Esperança · ${esc(CHURCH.city)} — ${esc(CHURCH.region)}, ${esc(CHURCH.postalCode)}</div></div></div></section>`;
+const eventCard = (e, h = 'h3') => `<div class="card"><span class="tag">${esc(e.dia)}</span><${h}>${esc(e.titulo)}</${h}><div class="meta">${esc(e.detalhe)}</div></div>`;
+const visitSection = () => `<section id="visite"><div class="sec"><h2>Venha nos visitar</h2><a href="${MAPS}" target="_blank" rel="noopener noreferrer">Como chegar →</a></div><div class="grid">${events.map((e) => eventCard(e)).join('')}<div class="card"><span class="tag">Endereço</span><h3>${esc(CHURCH.street)}</h3><div class="meta">Conjunto Esperança · ${esc(CHURCH.city)} — ${esc(CHURCH.region)}, ${esc(CHURCH.postalCode)}</div></div></div></section>`;
 
 addPage({
   url: '/', active: 'inicio', head: REDIRECT,
@@ -152,7 +152,7 @@ addPage({
     visitSection() +
     `<div class="sec"><h2>Texto-base da igreja</h2><a href="/texto-base/">Ler texto-base →</a></div><div class="card" style="margin-bottom:36px"><span class="tag">${esc(foundation.ref)}</span><h3>Texto-base para a igreja</h3><p>${esc(foundation.text[0])}</p><div class="meta">${esc(foundation.author)} · ${fmt(foundation.date)}</div></div>` +
     `<div class="sec"><h2>A igreja em imagens</h2><a href="${MAPS}" target="_blank" rel="noopener noreferrer">Ver perfil no Google Maps →</a></div>${gallery()}` +
-    youtubeSection() + `<div class="sec"><h2>Últimos devocionais</h2><a href="/devocionais/">Ver todos →</a></div><div class="grid">${posts.slice(0, 3).map(card).join('')}</div>`
+    youtubeSection() + `<div class="sec"><h2>Últimos devocionais</h2><a href="/devocionais/">Ver todos →</a></div><div class="grid">${posts.slice(0, 3).map((p) => card(p)).join('')}</div>`
 });
 addPage({
   url: '/texto-base/', active: 'texto-base', title: 'Texto-base · ' + SHORT_BRAND, desc: clip(foundation.text[0], 155),
@@ -161,7 +161,7 @@ addPage({
 const cats = ['Todos'].concat(posts.map((p) => p.cat).filter((v, i, a) => a.indexOf(v) === i));
 addPage({
   url: '/devocionais/', active: 'devocionais', title: 'Devocionais · ' + SHORT_BRAND, desc: 'Palavras curtas para alimentar a sua fé a cada semana.',
-  body: `${crumb('Devocionais')}<h1 class="page-title">Devocionais</h1><p class="lead">Palavras curtas para alimentar a sua fé a cada semana.</p><div class="filters" hidden>${cats.map((c, i) => `<button type="button" class="${i === 0 ? 'on' : ''}" data-c="${esc(c)}">${esc(c)}</button>`).join('')}</div><div class="grid">${posts.map(card).join('')}</div>`
+  body: `${crumb('Devocionais')}<h1 class="page-title">Devocionais</h1><p class="lead">Palavras curtas para alimentar a sua fé a cada semana.</p><div class="filters" hidden>${cats.map((c, i) => `<button type="button" class="${i === 0 ? 'on' : ''}" data-c="${esc(c)}">${esc(c)}</button>`).join('')}</div><div class="grid">${posts.map((p) => card(p, 'h2')).join('')}</div>`
 });
 posts.forEach((p) => addPage({
   url: `/devocionais/${p.slug}/`, active: 'devocionais', title: `${p.title} · Devocional · ${SHORT_BRAND}`, desc: clip(p.paragraphs[0], 155),
@@ -174,7 +174,7 @@ addPage({
 });
 addPage({
   url: '/eventos/', active: 'eventos', title: 'Cultos e eventos · ' + SHORT_BRAND, desc: 'Horários dos cultos e endereço: R. 104, 227 — Conjunto Esperança, Fortaleza.',
-  body: `${crumb('Eventos')}<h1 class="page-title">Eventos e cultos</h1><p class="lead">Venha nos visitar, você é bem-vindo.</p><div class="grid">${events.map(eventCard).join('')}</div>`
+  body: `${crumb('Eventos')}<h1 class="page-title">Eventos e cultos</h1><p class="lead">Venha nos visitar, você é bem-vindo.</p><div class="grid">${events.map((e) => eventCard(e, 'h2')).join('')}</div>`
 });
 
 // ---------- leitor da Bíblia (Almeida Revista e Corrigida, edição de 1911, domínio público) ----------

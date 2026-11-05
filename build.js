@@ -17,6 +17,32 @@ const json = (f) => JSON.parse(read(f));
 const MONTHS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 const fmt = (d) => { const p = d.split('-'); return +p[2] + ' ' + MONTHS[+p[1] - 1] + ' ' + p[0]; };
 
+// ---------- Bíblia online (link externo; o texto não é copiado para o site) ----------
+const BIBLE_BASE = 'https://www.bibliaonline.com.br/arc';
+const BOOKS = {
+  'Gênesis': 'gn', 'Êxodo': 'ex', 'Levítico': 'lv', 'Números': 'nm', 'Deuteronômio': 'dt', 'Josué': 'js', 'Juízes': 'jz', 'Rute': 'rt',
+  '1 Samuel': '1sm', '2 Samuel': '2sm', '1 Reis': '1rs', '2 Reis': '2rs', '1 Crônicas': '1cr', '2 Crônicas': '2cr', 'Esdras': 'ed', 'Neemias': 'ne', 'Ester': 'et',
+  'Jó': 'job', 'Salmos': 'sl', 'Provérbios': 'pv', 'Eclesiastes': 'ec', 'Cantares': 'ct', 'Isaías': 'is', 'Jeremias': 'jr', 'Lamentações': 'lm', 'Ezequiel': 'ez', 'Daniel': 'dn',
+  'Oséias': 'os', 'Joel': 'jl', 'Amós': 'am', 'Obadias': 'ob', 'Jonas': 'jn', 'Miqueias': 'mq', 'Naum': 'na', 'Habacuque': 'hc', 'Sofonias': 'sf', 'Ageu': 'ag', 'Zacarias': 'zc', 'Malaquias': 'ml',
+  'Mateus': 'mt', 'Marcos': 'mc', 'Lucas': 'lc', 'João': 'jo', 'Atos': 'at', 'Romanos': 'rm', '1 Coríntios': '1co', '2 Coríntios': '2co', 'Gálatas': 'gl', 'Efésios': 'ef', 'Filipenses': 'fp', 'Colossenses': 'cl',
+  '1 Tessalonicenses': '1ts', '2 Tessalonicenses': '2ts', '1 Timóteo': '1tm', '2 Timóteo': '2tm', 'Tito': 'tt', 'Filemom': 'fm', 'Hebreus': 'hb', 'Tiago': 'tg',
+  '1 Pedro': '1pe', '2 Pedro': '2pe', '1 João': '1jo', '2 João': '2jo', '3 João': '3jo', 'Judas': 'jd', 'Apocalipse': 'ap'
+};
+// "Salmo 119.105" -> https://www.bibliaonline.com.br/arc/sl/119/105 ; "Efésios 2.8-9" -> .../ef/2/8-9
+function bibleUrl(ref) {
+  const m = String(ref).trim().match(/^(.+?)\s+(\d+)(?:[.:](\d+(?:[-–,]\d+)*))?$/);
+  if (!m) return null;
+  const name = m[1] === 'Salmo' ? 'Salmos' : m[1];
+  const abbr = BOOKS[name];
+  if (!abbr) return null;
+  return `${BIBLE_BASE}/${abbr}/${m[2]}${m[3] ? '/' + m[3].replace('–', '-') : ''}`;
+}
+const refHtml = (ref) => {
+  const url = bibleUrl(ref);
+  if (!url) { console.warn('Aviso: referência sem link da Bíblia: ' + ref); return esc(ref); }
+  return `<a href="${url}" target="_blank" rel="noopener noreferrer">${esc(ref)} <span class="ref-go">ler na Bíblia (ARC) ↗</span></a>`;
+};
+
 // ---------- conteúdo ----------
 function parsePost(file) {
   const raw = read('content/devocionais/' + file).replace(/\r\n/g, '\n');
@@ -46,7 +72,7 @@ const appJs = read('src/app.js');
 const hash = (s) => crypto.createHash('sha1').update(s).digest('hex').slice(0, 8);
 const appName = 'app.' + hash(appJs) + '.js';
 
-const NAV = [['/', 'Início', 'inicio'], ['/texto-base/', 'Texto-base', 'texto-base'], ['/devocionais/', 'Devocionais', 'devocionais'], ['/videos/', 'Vídeos', 'videos'], ['/eventos/', 'Eventos', 'eventos'], ['/#sobre', 'Sobre', 'sobre']];
+const NAV = [['/', 'Início', 'inicio'], ['/texto-base/', 'Texto-base', 'texto-base'], ['/devocionais/', 'Devocionais', 'devocionais'], ['/videos/', 'Vídeos', 'videos'], ['/eventos/', 'Eventos', 'eventos'], [BIBLE_BASE, 'Bíblia', 'biblia', true], ['/#sobre', 'Sobre', 'sobre']];
 const crumb = (label) => `<div class="crumb"><a href="/">Início</a> › ${label}</div>`;
 const card = (p) => `<a class="card" href="/devocionais/${p.slug}/" data-cat="${esc(p.cat)}"><span class="tag">${esc(p.cat)}</span><h3>${esc(p.title)}</h3><p>${esc(p.paragraphs[0].slice(0, 110))}…</p><div class="meta">${esc(p.author)} · ${fmt(p.date)}</div></a>`;
 
@@ -91,7 +117,7 @@ addPage({
 });
 addPage({
   url: '/texto-base/', active: 'texto-base', title: 'Texto-base · Igreja Congregacional Conjunto Esperança', desc: foundation.text[0].slice(0, 155),
-  body: `${crumb('Texto-base')}<article><span class="tag">Texto-base da igreja</span><h1>Texto-base para a igreja</h1><div class="ref">${esc(foundation.ref)}</div>${foundation.text.map((p) => `<p>${esc(p)}</p>`).join('')}<div class="meta">${esc(foundation.author)} · ${fmt(foundation.date)}</div></article>`
+  body: `${crumb('Texto-base')}<article><span class="tag">Texto-base da igreja</span><h1>Texto-base para a igreja</h1><div class="ref">${refHtml(foundation.ref)}</div>${foundation.text.map((p) => `<p>${esc(p)}</p>`).join('')}<div class="meta">${esc(foundation.author)} · ${fmt(foundation.date)}</div></article>`
 });
 const cats = ['Todos'].concat(posts.map((p) => p.cat).filter((v, i, a) => a.indexOf(v) === i));
 addPage({
@@ -100,7 +126,7 @@ addPage({
 });
 posts.forEach((p) => addPage({
   url: `/devocionais/${p.slug}/`, active: 'devocionais', title: `${p.title} · Devocional · Conjunto Esperança`, desc: p.paragraphs[0].slice(0, 155),
-  body: `<article><a class="back" href="/devocionais/">← Todos os devocionais</a><div style="margin-top:22px"><span class="tag">${esc(p.cat)}</span></div><h1>${esc(p.title)}</h1><div class="meta" style="margin-bottom:6px">${esc(p.author)} · ${fmt(p.date)}</div><div class="ref">${esc(p.ref)}</div>${p.paragraphs.map((x) => `<p>${esc(x)}</p>`).join('')}</article>`
+  body: `<article><a class="back" href="/devocionais/">← Todos os devocionais</a><div style="margin-top:22px"><span class="tag">${esc(p.cat)}</span></div><h1>${esc(p.title)}</h1><div class="meta" style="margin-bottom:6px">${esc(p.author)} · ${fmt(p.date)}</div><div class="ref">${refHtml(p.ref)}</div>${p.paragraphs.map((x) => `<p>${esc(x)}</p>`).join('')}</article>`
 }));
 addPage({
   url: '/videos/', active: 'videos', title: 'Vídeos · Igreja Congregacional Conjunto Esperança', desc: 'Mensagens, cultos e transmissões da Igreja Congregacional · Conjunto Esperança.',
@@ -115,7 +141,7 @@ function render(pg) {
   const abs = (u) => (SITE ? SITE + u : u);
   const ogImage = SITE ? `<meta property="og:image" content="${SITE}/logo-igreja.webp">` : '';
   const canonical = SITE ? `<link rel="canonical" href="${SITE}${pg.url}">\n<meta property="og:url" content="${SITE}${pg.url}">` : '';
-  const nav = NAV.map(([href, label, key]) => `<a href="${href}"${key === pg.active ? ' class="on"' : ''}>${label}</a>`).join('');
+  const nav = NAV.map(([href, label, key, external]) => `<a href="${href}"${key === pg.active ? ' class="on"' : ''}${external ? ' target="_blank" rel="noopener noreferrer" title="Abre a Bíblia online (ARC) em outro site"' : ''}>${label}${external ? ' ↗' : ''}</a>`).join('');
   return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>

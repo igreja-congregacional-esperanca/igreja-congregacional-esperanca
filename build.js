@@ -9,7 +9,6 @@ const OUT = path.join(ROOT, 'public');
 const SITE = (process.env.SITE_URL || (process.env.VERCEL_PROJECT_PRODUCTION_URL ? 'https://' + process.env.VERCEL_PROJECT_PRODUCTION_URL : '')).replace(/\/$/, '');
 const CHANNEL = 'https://www.youtube.com/@IECConjuntoEsperan%C3%A7a';
 const MAPS = 'https://www.google.com/maps/place/Igreja+Congregacional+%7C+Conjunto+Esperan%C3%A7a/data=!4m7!3m6!1s0x7c74df34c4511d1:0xc750b079627d6c!8m2!3d-3.8139266!4d-38.5900581!16s%2Fg%2F11ghdt_hyp?hl=pt-BR';
-const FONTS = 'https://fonts.googleapis.com/css2?family=Lora:wght@500;600&family=Inter:wght@400;500;600&display=swap';
 
 const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
@@ -70,7 +69,7 @@ const slugs = new Set();
 posts.forEach((p) => { if (slugs.has(p.slug)) throw new Error('Slug repetido: ' + p.slug); slugs.add(p.slug); });
 const foundation = json('content/texto-base.json');
 const events = json('content/eventos.json');
-const videos = json('content/videos.json');
+const videos = json('content/videos.json').map((v) => ({ ...v, l: fs.existsSync(path.join(ROOT, 'assets/yt', v.id + '.jpg')) ? 1 : 0 }));
 
 // ---------- peças de HTML ----------
 const css = read('src/style.css');
@@ -80,6 +79,7 @@ const appJs = read('src/app.js');
 const hash = (s) => crypto.createHash('sha1').update(s).digest('hex').slice(0, 8);
 const appName = 'app.' + hash(appJs) + '.js';
 const cssName = 'site.' + hash(css) + '.css';
+const logoName = 'logo-simbolo.' + hash(fs.readFileSync(path.join(ROOT, 'logo-simbolo.webp')).toString('latin1')) + '.webp';
 
 const NAV = [['/', 'Início', 'inicio'], ['/texto-base/', 'Texto-base', 'texto-base'], ['/devocionais/', 'Devocionais', 'devocionais'], ['/videos/', 'Vídeos', 'videos'], ['/eventos/', 'Eventos', 'eventos'], ['/biblia/', 'Bíblia', 'biblia'], ['/#sobre', 'Sobre', 'sobre']];
 const crumb = (label) => `<div class="crumb"><a href="/">Início</a> › ${label}</div>`;
@@ -89,15 +89,15 @@ function youtubeCard(v) {
   const id = v.id, title = esc(v.title || 'Vídeo recente');
   const d = v.publishedAt ? new Date(v.publishedAt) : null;
   const dateText = d && !isNaN(d) ? new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'America/Fortaleza' }).format(d) : 'Vídeo recente';
-  return `<article class="youtube-card"><div class="youtube-thumb"><button type="button" data-play-video="${id}" data-video-title="${title}" aria-label="Reproduzir dentro do site: ${title}"><img src="https://i.ytimg.com/vi/${id}/hqdefault.jpg" width="480" height="360" alt="Miniatura do vídeo: ${title}" loading="lazy" decoding="async"><span class="youtube-play" aria-hidden="true">▶</span></button></div><div class="youtube-info"><h3>${title}</h3><span class="youtube-date">Publicado em ${dateText}</span><a class="youtube-date" href="https://www.youtube.com/watch?v=${id}" target="_blank" rel="noopener noreferrer">Abrir no YouTube ↗</a></div></article>`;
+  return `<article class="youtube-card"><div class="youtube-thumb"><button type="button" data-play-video="${id}" data-video-title="${title}" aria-label="Reproduzir dentro do site: ${title}"><img src="${v.l ? `/assets/yt/${id}.jpg` : `https://i.ytimg.com/vi/${id}/mqdefault.jpg`}" width="320" height="180" alt="Miniatura do vídeo: ${title}" loading="lazy" decoding="async"><span class="youtube-play" aria-hidden="true">▶</span></button></div><div class="youtube-info"><h3>${title}</h3><span class="youtube-date">Publicado em ${dateText}</span><a class="youtube-date" href="https://www.youtube.com/watch?v=${id}" target="_blank" rel="noopener noreferrer">Abrir no YouTube ↗</a></div></article>`;
 }
 const youtubeSection = () => `<section class="youtube-section" id="videos"><div class="sec"><h2>Vídeos recentes</h2><a href="${CHANNEL}" target="_blank" rel="noopener noreferrer">Ver canal →</a></div><div id="youtube-live" class="live-card" hidden aria-live="polite"></div><div id="youtube-grid" class="youtube-grid" aria-live="polite">${videos.map(youtubeCard).join('')}</div><p id="youtube-status" class="youtube-note" aria-live="polite">Prévia dos vídeos recentes; a lista está sendo atualizada.</p><script type="application/json" id="yt-initial">${JSON.stringify(videos).replace(/</g, '\\u003c')}</script></section>`;
 
 const GALLERY = [
-  { base: 'santuario-google-maps', widths: [480, 800], w: 800, h: 1067, alt: 'Espaço de culto da Igreja Congregacional no Conjunto Esperança', t: 'Nosso espaço de culto', c: 'Um lugar de comunhão e adoração.' },
+  { base: 'santuario-google-maps', widths: [480, 640], w: 640, h: 853, alt: 'Espaço de culto da Igreja Congregacional no Conjunto Esperança', t: 'Nosso espaço de culto', c: 'Um lugar de comunhão e adoração.' },
   { base: 'assentos-google-maps', widths: [360], w: 360, h: 640, alt: 'Assentos e interior do espaço de culto', t: 'Nosso espaço de culto', c: 'Um ambiente preparado para receber a comunidade.' },
-  { base: 'fachada-google-maps', widths: [480, 800], w: 800, h: 1067, alt: 'Fachada da Igreja Congregacional do Conjunto Esperança em Fortaleza', t: 'Nossa igreja', c: 'Estamos na Rua 104, nº 227, em Fortaleza.' },
-  { base: 'santuario-alternativo-google-maps', widths: [480, 800], w: 800, h: 1067, alt: 'Vista alternativa do santuário da igreja', t: 'Espaço de culto', c: 'Nosso lugar de encontro e adoração.' },
+  { base: 'fachada-google-maps', widths: [480, 640], w: 640, h: 853, alt: 'Fachada da Igreja Congregacional do Conjunto Esperança em Fortaleza', t: 'Nossa igreja', c: 'Estamos na Rua 104, nº 227, em Fortaleza.' },
+  { base: 'santuario-alternativo-google-maps', widths: [480, 640], w: 640, h: 853, alt: 'Vista alternativa do santuário da igreja', t: 'Espaço de culto', c: 'Nosso lugar de encontro e adoração.' },
   { base: 'fachada-noite-google-maps', widths: [480], w: 480, h: 640, alt: 'Fachada da igreja iluminada à noite', t: 'Nossa igreja à noite', c: 'Esperamos por você no Conjunto Esperança.' }
 ];
 const gallery = () => {
@@ -202,16 +202,14 @@ function render(pg) {
 ${ogImage}
 ${canonical}
 <link rel="icon" type="image/webp" href="/logo-simbolo.webp">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="style" href="${FONTS}" onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="${FONTS}"></noscript>
-<link rel="stylesheet" href="/assets/${cssName}">
+<link rel="preload" href="/assets/fonts/inter-v20-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/lora-v37-latin.woff2" as="font" type="font/woff2" crossorigin>
+${pg.url.startsWith('/biblia/') ? `<link rel="stylesheet" href="/assets/${cssName}">` : `<style>\n${css}\n</style>`}
 ${pg.head}
 </head>
 <body>
 ${top}<header class="main"><div class="wrap">
-<a class="brand" href="/"><img class="brand-mark" src="/logo-simbolo.webp" width="34" height="34" alt=""><span class="brand-name">Igreja Congregacional<small>Conjunto Esperança</small></span></a>
+<a class="brand" href="/"><img class="brand-mark" src="/assets/${logoName}" width="34" height="34" alt=""><span class="brand-name">Igreja Congregacional<small>Conjunto Esperança</small></span></a>
 <button class="menu" id="mb" aria-label="Menu" aria-controls="nav" aria-expanded="false">Menu</button>
 <nav id="nav">${nav}</nav>
 </div></header>
@@ -228,6 +226,7 @@ fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(path.join(OUT, 'assets'), { recursive: true });
 fs.cpSync(path.join(ROOT, 'assets'), path.join(OUT, 'assets'), { recursive: true });
 ['logo-igreja.webp', 'logo-simbolo.webp'].forEach((f) => fs.copyFileSync(path.join(ROOT, f), path.join(OUT, f)));
+fs.copyFileSync(path.join(ROOT, 'logo-simbolo.webp'), path.join(OUT, 'assets', logoName));
 fs.writeFileSync(path.join(OUT, 'assets', appName), appJs);
 fs.writeFileSync(path.join(OUT, 'assets', cssName), css);
 pages.forEach((pg) => {

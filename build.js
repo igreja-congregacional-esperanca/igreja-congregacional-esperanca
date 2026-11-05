@@ -152,22 +152,23 @@ const BIBLE = json('content/biblia/ALM1911.json');
 if (BIBLE.length !== BOOK_LIST.length) throw new Error('Número de livros da Bíblia não confere');
 BOOK_LIST.forEach((b, i) => { b.chapters = BIBLE[i]; });
 const OT_COUNT = 39;
+const versionBadge = `<div class="bible-version"><span class="tag">Versão: Almeida Revista e Corrigida · edição de 1911</span><a href="/biblia/#versao">Sobre esta versão</a></div>`;
 const BIBLE_NOTE = `<p class="bible-note">Texto: Bíblia de João Ferreira de Almeida, edição Revista e Corrigida de 1911, em domínio público, com a ortografia da época. Não é a ARC atual da Sociedade Bíblica do Brasil.</p>`;
 const bibleCrumb = (...parts) => `<div class="crumb"><a href="/">Início</a> › <a href="/biblia/">Bíblia</a>${parts.map((p) => ' › ' + p).join('')}</div>`;
 const bookGrid = (list) => `<div class="book-grid">${list.map((b) => `<a href="/biblia/${b.abbr}/">${esc(b.name)}</a>`).join('')}</div>`;
 addPage({
   url: '/biblia/', active: 'biblia', head: '',
   title: 'Bíblia online · Igreja Congregacional Conjunto Esperança', desc: 'Leia a Bíblia no site: Almeida Revista e Corrigida (edição de 1911), do Gênesis ao Apocalipse.',
-  body: `${crumb('Bíblia')}<h1 class="page-title">Bíblia</h1><p class="lead">Leia as Escrituras sem sair do site.</p>` +
+  body: `${crumb('Bíblia')}<h1 class="page-title">Bíblia</h1><p class="lead">Leia as Escrituras sem sair do site.</p>${versionBadge}` +
     `<form class="bible-jump" id="bible-jump" hidden><label for="bible-q">Ir para a passagem</label><div><input id="bible-q" type="text" placeholder="Ex.: Salmos 119.105" autocomplete="off" list="bible-books"><button class="btn" type="submit">Ir</button></div><p id="bible-err" class="bible-err" role="alert" hidden>Não encontrei essa passagem. Tente, por exemplo, “João 3.16”.</p></form>` +
     `<datalist id="bible-books">${BOOK_LIST.map((b) => `<option value="${esc(b.name)}">`).join('')}</datalist>` +
-    `<h2 class="bible-h">Antigo Testamento</h2>${bookGrid(BOOK_LIST.slice(0, OT_COUNT))}<h2 class="bible-h">Novo Testamento</h2>${bookGrid(BOOK_LIST.slice(OT_COUNT))}${BIBLE_NOTE}` +
+    `<h2 class="bible-h">Antigo Testamento</h2>${bookGrid(BOOK_LIST.slice(0, OT_COUNT))}<h2 class="bible-h">Novo Testamento</h2>${bookGrid(BOOK_LIST.slice(OT_COUNT))}<section class="card bible-about" id="versao"><h3>Sobre esta versão</h3><p><strong>Almeida Revista e Corrigida, edição de 1911</strong>, tradução de João Ferreira de Almeida. O texto está em domínio público e mantém a ortografia da época (por exemplo, “creou” e “ninguem”).</p><p>Não é a ARC atual da Sociedade Bíblica do Brasil, que tem direitos reservados e pode ter pequenas diferenças de redação. Para comparar, cada capítulo traz um link para a ARC atual.</p></section>` +
     `<script type="application/json" id="bible-index">${JSON.stringify(BOOK_LIST.map((b) => [b.name, b.abbr, b.chapters.length])).replace(/</g, '\\u003c')}</script>`
 });
 BOOK_LIST.forEach((b, bi) => {
   addPage({
     url: `/biblia/${b.abbr}/`, active: 'biblia', title: `${b.name} · Bíblia · Igreja Congregacional Conjunto Esperança`, desc: `${b.name}: ${b.chapters.length} capítulo(s). Almeida Revista e Corrigida (edição de 1911).`,
-    body: `${bibleCrumb(esc(b.name))}<h1 class="page-title">${esc(b.name)}</h1><p class="lead">${b.chapters.length} capítulo${b.chapters.length > 1 ? 's' : ''}</p><div class="chapter-grid">${b.chapters.map((_, ci) => `<a href="/biblia/${b.abbr}/${ci + 1}/">${ci + 1}</a>`).join('')}</div>${BIBLE_NOTE}`
+    body: `${bibleCrumb(esc(b.name))}<h1 class="page-title">${esc(b.name)}</h1><p class="lead">${b.chapters.length} capítulo${b.chapters.length > 1 ? 's' : ''}</p>${versionBadge}<div class="chapter-grid">${b.chapters.map((_, ci) => `<a href="/biblia/${b.abbr}/${ci + 1}/">${ci + 1}</a>`).join('')}</div>${BIBLE_NOTE}`
   });
   b.chapters.forEach((verses, ci) => {
     const n = ci + 1;
@@ -176,7 +177,7 @@ BOOK_LIST.forEach((b, bi) => {
     const pager = `<div class="bible-pager">${prev ? `<a href="${prev.u}" rel="prev">← ${esc(prev.t)}</a>` : '<span></span>'}<a href="/biblia/${b.abbr}/">Capítulos</a>${next ? `<a href="${next.u}" rel="next">${esc(next.t)} →</a>` : '<span></span>'}</div>`;
     addPage({
       url: `/biblia/${b.abbr}/${n}/`, active: 'biblia', title: `${b.name} ${n} · Bíblia · Igreja Congregacional Conjunto Esperança`, desc: verses.slice(0, 2).join(' ').slice(0, 155),
-      body: `${bibleCrumb(`<a href="/biblia/${b.abbr}/">${esc(b.name)}</a>`, String(n))}<article class="bible-chapter"><h1>${esc(b.name)} ${n}</h1>${verses.map((t, vi) => `<p class="verse" id="v${vi + 1}"><b>${vi + 1}</b> ${esc(t)}</p>`).join('')}</article>${pager}<p class="bible-note">Compare com a ARC atual: <a href="${BIBLE_BASE}/${b.abbr}/${n}" target="_blank" rel="noopener noreferrer">${esc(b.name)} ${n} no bibliaonline.com.br ↗</a></p>${BIBLE_NOTE}`
+      body: `${bibleCrumb(`<a href="/biblia/${b.abbr}/">${esc(b.name)}</a>`, String(n))}<article class="bible-chapter"><h1>${esc(b.name)} ${n}</h1>${versionBadge}${verses.map((t, vi) => `<p class="verse" id="v${vi + 1}"><b>${vi + 1}</b> ${esc(t)}</p>`).join('')}</article>${pager}<p class="bible-note">Compare com a ARC atual: <a href="${BIBLE_BASE}/${b.abbr}/${n}" target="_blank" rel="noopener noreferrer">${esc(b.name)} ${n} no bibliaonline.com.br ↗</a></p>${BIBLE_NOTE}`
     });
   });
 });

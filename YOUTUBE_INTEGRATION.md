@@ -2,7 +2,7 @@
 
 O canal confirmado é [IEC Conjunto Esperança](https://www.youtube.com/@IECConjuntoEsperan%C3%A7a), ID `UCSQl8zLsF2-LWAIQu01Ua6A`.
 
-A lista de vídeos recentes usa o feed Atom público do próprio YouTube: `https://www.youtube.com/feeds/videos.xml?channel_id=UCSQl8zLsF2-LWAIQu01Ua6A`. O feed fornece o ID, título e data de publicação; a função `api/youtube.js` seleciona os seis vídeos mais recentes, sem precisar de Supabase nem de chave da Data API. Para os cartões surgirem logo ao abrir, a página inclui uma lista inicial de seis prévias conhecidas e consulta o endpoint em segundo plano. Se o endpoint falhar, as prévias continuam disponíveis e a página tenta atualizar novamente.
+A lista de vídeos recentes usa o feed Atom público do próprio YouTube: `https://www.youtube.com/feeds/videos.xml?channel_id=UCSQl8zLsF2-LWAIQu01Ua6A`. O feed fornece o ID, título e data de publicação; a função `api/youtube.js` seleciona os seis vídeos mais recentes, sem precisar de Supabase nem de chave da Data API. Para os cartões surgirem logo ao abrir, a página inclui uma lista inicial de seis prévias (`content/videos.json`) e consulta o endpoint em segundo plano. Se o endpoint falhar, as prévias continuam disponíveis e a página tenta atualizar novamente.
 
 Cada vídeo gravado pode ser reproduzido dentro do site: a pessoa carrega em **Reproduzir** e o player YouTube incorporado abre no lugar da miniatura. O player não arranca sozinho ao abrir a página. Há também um link para abrir o vídeo diretamente no YouTube.
 
@@ -17,3 +17,7 @@ A deteção de live funciona sem chave através da página pública `/live`. Opc
 - [Canal oficial da igreja](https://www.youtube.com/@IECConjuntoEsperan%C3%A7a)
 - [Feed Atom público do canal](https://www.youtube.com/feeds/videos.xml?channel_id=UCSQl8zLsF2-LWAIQu01Ua6A)
 - [Documentação oficial do método YouTube Data API `search.list`](https://developers.google.com/youtube/data/reference/rest/v3/search/list)
+
+## Rotas e frequência
+
+`/api/youtube?part=videos` devolve só a lista (cache de 30 min) e `/api/youtube?part=live` só o estado da transmissão (cache de 90 s, ou 15 min com `YOUTUBE_API_KEY`). Sem `part`, devolve os dois, como antes. A página pausa as consultas quando a aba está escondida e consulta a live a cada 90 s nos horários de culto e a cada 5 min fora deles.

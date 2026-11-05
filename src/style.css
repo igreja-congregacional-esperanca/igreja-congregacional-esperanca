@@ -44,7 +44,7 @@ h1,h2,h3{font-family:Lora,Georgia,serif;line-height:1.25;margin:0}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:10px;transition:.15s}
 .card:hover{transform:translateY(-2px);border-color:var(--accent)}
 .tag{align-self:flex-start;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px}
-.card h3{font-size:20px}.card p{margin:0;color:var(--muted);font-size:15px}
+.card h2,.card h3{font-size:20px}.card p{margin:0;color:var(--muted);font-size:15px}
 .meta{font-size:13px;color:var(--muted);margin-top:auto;padding-top:6px}
 .filters{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 26px}
 .filters button{border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:999px;padding:6px 16px;font:500 13px Inter,sans-serif;cursor:pointer}
@@ -101,7 +101,7 @@ article p{font-size:18px;margin:0 0 1.2em}
 @media(max-width:620px){.photo-grid{display:flex;gap:14px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scroll-behavior:smooth;padding:0 1px 12px;margin:0 -2px 8px;-webkit-overflow-scrolling:touch;scrollbar-width:none}.photo-grid::-webkit-scrollbar{display:none}.photo-card{flex:0 0 88%;scroll-snap-align:center;scroll-snap-stop:always}.photo-card img{aspect-ratio:3/4;object-fit:cover}.photo-carousel-controls{display:flex;justify-content:center;align-items:center;gap:12px;margin:0 0 16px}.live-card{grid-template-columns:1fr}.live-copy h3{font-size:20px}}
 footer{margin-top:70px;background:var(--surface);border-top:1px solid var(--line);padding:44px 0 24px;font-size:14px;color:var(--muted)}
 .fcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:32px}
-footer h4{font-family:Lora,Georgia,serif;font-size:17px;color:var(--text);margin:0 0 10px}
+footer h2{font-family:Lora,Georgia,serif;font-size:17px;line-height:1.65;color:var(--text);margin:0 0 10px}
 footer p{margin:0 0 8px}
 .copy{border-top:1px solid var(--line);margin-top:30px;padding-top:18px;font-size:13px}
 .social-icon{display:inline-block;width:16px;height:16px;vertical-align:-3px;margin-right:6px;flex:none}

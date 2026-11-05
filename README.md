@@ -1,6 +1,6 @@
 # Igreja Evangélica Congregacional Conjunto Esperança
 
-Site para produção na Vercel: páginas HTML estáticas geradas por `node build.js` (sem framework nem dependências) e uma função serverless em `api/youtube.js`. O `vercel.json` já define o build (`node build.js`) e a saída (`public/`); em **Framework Preset** use **Other**. Defina a variável `SITE_URL` (ex.: `https://seudominio.com.br`) na Vercel para gerar `sitemap.xml`, links canônicos e a imagem de compartilhamento.
+Site para produção na Vercel: páginas HTML estáticas geradas por `node build.js` (sem framework nem dependências) e uma função serverless em `api/youtube.js`. O `vercel.json` já define o build (`node build.js`) e a saída (`public/`); em **Framework Preset** use **Other**. Defina a variável `SITE_URL` na Vercel (em produção: `https://www.iecesperanca.com.br`, com `www`, porque o domínio sem `www` redireciona para ele) para gerar `sitemap.xml`, links canônicos, dados estruturados e a imagem de compartilhamento. Veja a seção **SEO** abaixo.
 
 A identidade verde/grafite, o logotipo, os ícones acessíveis do Instagram e YouTube e a galeria com cinco fotos da igreja estão integrados. No celular, as fotos passam num carrossel horizontal com rolagem, controles anterior/próxima e indicador de posição; em telas maiores, aparecem em grade. As fotos vieram da categoria **Do proprietário** da ficha da igreja no Google Maps; veja `PHOTO_SOURCES.md`.
 
@@ -18,15 +18,29 @@ O conteúdo de Mateus 11.28 aparece numa seção própria como **Texto-base da i
 
 ## Arquivos principais
 
-- `build.js` — gera as páginas em `public/` (início, texto-base, devocionais, vídeos, eventos, Bíblia, sitemap e robots).
+- `build.js` — gera as páginas em `public/` (início, texto-base, devocionais, vídeos, eventos, Bíblia, 404, sitemap e robots), incluindo as meta tags e os dados estruturados (JSON-LD).
 - `content/` — textos: `devocionais/*.md`, `texto-base.json`, `eventos.json` e `videos.json` (prévias dos vídeos).
 - `content/biblia/` — texto da Bíblia (Almeida Revista e Corrigida, edição de 1911, domínio público); veja `content/biblia/LEIA-ME.md` para origem e cuidados. O `build.js` gera uma página por capítulo em `/biblia/<livro>/<capítulo>/`.
 - `src/` — `style.css`, `app.js` (menu, filtro, carrossel e YouTube), cabeçalho e rodapé.
 - `api/youtube.js` — feed de vídeos recentes e estado de transmissão ao vivo.
 - `assets/` — fotos da igreja em WebP (480/800 px; nomes com a largura, cache imutável).
+- `og-image.jpg`, `favicon.ico`, `apple-touch-icon.png` — imagem de compartilhamento (1200×630) e ícones quadrados, na raiz; o `build.js` os copia para `public/`.
 - `vercel.json` — build e cabeçalhos de cache.
 - `YOUTUBE_INTEGRATION.md` — funcionamento, referências e configuração da integração.
 - `PHOTO_SOURCES.md` — origem e referências das fotografias.
+
+## SEO
+
+- **Nome oficial:** "Igreja Evangélica Congregacional Conjunto Esperança" (igual ao logo e à fachada), definido em `BRAND` no topo do `build.js`. "Igreja Congregacional Conjunto Esperança" (nome que ainda consta na ficha do Google Maps) fica só como `alternateName` nos dados estruturados.
+- **Dados da igreja (`CHURCH` no `build.js`):** endereço, telefone, coordenadas e horário do culto de domingo alimentam o JSON-LD `Church` da página inicial. Mantenha-os iguais ao rodapé (`src/footer.html`), a `content/eventos.json` e à ficha do Google Maps. O culto de quarta-feira só entra aí quando houver horário confirmado.
+- **Sem `SITE_URL` não há:** link canônico, JSON-LD, `og:image`, `twitter:card` nem `sitemap.xml`. O valor deve ser exatamente o endereço publicado (`https://www.iecesperanca.com.br`).
+- **Títulos:** o ideal é até 60 caracteres, que é onde o Google costuma cortar. Páginas internas usam o sufixo curto `SHORT_BRAND` ("Conjunto Esperança"); só a página inicial leva o nome completo (63 caracteres). Descrições até 155 caracteres, cortadas sem partir palavra (`clip`).
+- **Dados estruturados:** `Church` + `WebSite` na página inicial, `BreadcrumbList` em todas as páginas internas e `Article` em cada devocional (o autor sai do campo `autor`, sem o "Pr.").
+- **Imagens:** `og-image.jpg` (fachada + logo) e os ícones foram gerados a partir de `logo-igreja.webp`, `logo-simbolo.webp` e da foto da fachada; se o logo mudar, refaça-os. Depois de trocar a imagem de compartilhamento, o WhatsApp e as redes podem demorar a atualizar por causa do cache.
+- **Sitemap:** `lastmod` só aparece onde há data real (devocionais, texto-base, vídeos e as páginas de listagem). Não use a data do build, senão o Google passa a ignorar o campo.
+- **404:** `public/404.html` é gerado pelo `build.js`, com `noindex` e fora do sitemap.
+- **Bíblia:** os 1.189 capítulos estão indexáveis. É conteúdo em domínio público presente em muitos sites, então vale acompanhar no Search Console se essas páginas são de fato indexadas; se não forem, avalie marcar os capítulos como `noindex` e manter indexados só `/biblia/` e as páginas dos livros.
+- **Fora do código:** o nome, o endereço e o telefone da ficha do Google Maps (Perfil da Empresa) devem ser idênticos aos do site, e o site deve estar verificado no Google Search Console com o `sitemap.xml` enviado.
 
 ## Bíblia no site
 

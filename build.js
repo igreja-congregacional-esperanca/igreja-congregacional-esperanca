@@ -37,10 +37,18 @@ function bibleUrl(ref) {
   if (!abbr) return null;
   return `${BIBLE_BASE}/${abbr}/${m[2]}${m[3] ? '/' + m[3].replace('–', '-') : ''}`;
 }
+// Link interno para o leitor do site: /biblia/sl/119/#v105 (ou #v8-9 para intervalos)
+function readerUrl(ref) {
+  const m = String(ref).trim().match(/^(.+?)\s+(\d+)(?:[.:](\d+)(?:[-–](\d+))?)?$/);
+  if (!m) return null;
+  const abbr = BOOKS[m[1] === 'Salmo' ? 'Salmos' : m[1]];
+  if (!abbr) return null;
+  return `/biblia/${abbr}/${m[2]}/${m[3] ? '#v' + m[3] + (m[4] ? '-' + m[4] : '') : ''}`;
+}
 const refHtml = (ref) => {
-  const url = bibleUrl(ref);
+  const url = readerUrl(ref);
   if (!url) { console.warn('Aviso: referência sem link da Bíblia: ' + ref); return esc(ref); }
-  return `<a href="${url}" target="_blank" rel="noopener noreferrer">${esc(ref)} <span class="ref-go">ler na Bíblia (ARC) ↗</span></a>`;
+  return `<a href="${url}">${esc(ref)} <span class="ref-go">ler na Bíblia →</span></a>`;
 };
 
 // ---------- conteúdo ----------
@@ -71,8 +79,9 @@ const footer = read('src/footer.html');
 const appJs = read('src/app.js');
 const hash = (s) => crypto.createHash('sha1').update(s).digest('hex').slice(0, 8);
 const appName = 'app.' + hash(appJs) + '.js';
+const cssName = 'site.' + hash(css) + '.css';
 
-const NAV = [['/', 'Início', 'inicio'], ['/texto-base/', 'Texto-base', 'texto-base'], ['/devocionais/', 'Devocionais', 'devocionais'], ['/videos/', 'Vídeos', 'videos'], ['/eventos/', 'Eventos', 'eventos'], [BIBLE_BASE, 'Bíblia', 'biblia', true], ['/#sobre', 'Sobre', 'sobre']];
+const NAV = [['/', 'Início', 'inicio'], ['/texto-base/', 'Texto-base', 'texto-base'], ['/devocionais/', 'Devocionais', 'devocionais'], ['/videos/', 'Vídeos', 'videos'], ['/eventos/', 'Eventos', 'eventos'], ['/biblia/', 'Bíblia', 'biblia'], ['/#sobre', 'Sobre', 'sobre']];
 const crumb = (label) => `<div class="crumb"><a href="/">Início</a> › ${label}</div>`;
 const card = (p) => `<a class="card" href="/devocionais/${p.slug}/" data-cat="${esc(p.cat)}"><span class="tag">${esc(p.cat)}</span><h3>${esc(p.title)}</h3><p>${esc(p.paragraphs[0].slice(0, 110))}…</p><div class="meta">${esc(p.author)} · ${fmt(p.date)}</div></a>`;
 
@@ -137,6 +146,41 @@ addPage({
   body: `${crumb('Eventos')}<h1 class="page-title">Eventos e cultos</h1><p class="lead">Venha nos visitar, você é bem-vindo.</p><div class="grid">${events.map((e) => `<div class="card"><span class="tag">${esc(e.dia)}</span><h3>${esc(e.titulo)}</h3><div class="meta">${esc(e.detalhe)}</div></div>`).join('')}</div>`
 });
 
+// ---------- leitor da Bíblia (Almeida Revista e Corrigida, edição de 1911, domínio público) ----------
+const BOOK_LIST = Object.entries(BOOKS).map(([name, abbr]) => ({ name, abbr }));
+const BIBLE = json('content/biblia/ALM1911.json');
+if (BIBLE.length !== BOOK_LIST.length) throw new Error('Número de livros da Bíblia não confere');
+BOOK_LIST.forEach((b, i) => { b.chapters = BIBLE[i]; });
+const OT_COUNT = 39;
+const BIBLE_NOTE = `<p class="bible-note">Texto: Bíblia de João Ferreira de Almeida, edição Revista e Corrigida de 1911, em domínio público, com a ortografia da época. Não é a ARC atual da Sociedade Bíblica do Brasil.</p>`;
+const bibleCrumb = (...parts) => `<div class="crumb"><a href="/">Início</a> › <a href="/biblia/">Bíblia</a>${parts.map((p) => ' › ' + p).join('')}</div>`;
+const bookGrid = (list) => `<div class="book-grid">${list.map((b) => `<a href="/biblia/${b.abbr}/">${esc(b.name)}</a>`).join('')}</div>`;
+addPage({
+  url: '/biblia/', active: 'biblia', head: '',
+  title: 'Bíblia online · Igreja Congregacional Conjunto Esperança', desc: 'Leia a Bíblia no site: Almeida Revista e Corrigida (edição de 1911), do Gênesis ao Apocalipse.',
+  body: `${crumb('Bíblia')}<h1 class="page-title">Bíblia</h1><p class="lead">Leia as Escrituras sem sair do site.</p>` +
+    `<form class="bible-jump" id="bible-jump" hidden><label for="bible-q">Ir para a passagem</label><div><input id="bible-q" type="text" placeholder="Ex.: Salmos 119.105" autocomplete="off" list="bible-books"><button class="btn" type="submit">Ir</button></div><p id="bible-err" class="bible-err" role="alert" hidden>Não encontrei essa passagem. Tente, por exemplo, “João 3.16”.</p></form>` +
+    `<datalist id="bible-books">${BOOK_LIST.map((b) => `<option value="${esc(b.name)}">`).join('')}</datalist>` +
+    `<h2 class="bible-h">Antigo Testamento</h2>${bookGrid(BOOK_LIST.slice(0, OT_COUNT))}<h2 class="bible-h">Novo Testamento</h2>${bookGrid(BOOK_LIST.slice(OT_COUNT))}${BIBLE_NOTE}` +
+    `<script type="application/json" id="bible-index">${JSON.stringify(BOOK_LIST.map((b) => [b.name, b.abbr, b.chapters.length])).replace(/</g, '\\u003c')}</script>`
+});
+BOOK_LIST.forEach((b, bi) => {
+  addPage({
+    url: `/biblia/${b.abbr}/`, active: 'biblia', title: `${b.name} · Bíblia · Conjunto Esperança`, desc: `${b.name}: ${b.chapters.length} capítulo(s). Almeida Revista e Corrigida (edição de 1911).`,
+    body: `${bibleCrumb(esc(b.name))}<h1 class="page-title">${esc(b.name)}</h1><p class="lead">${b.chapters.length} capítulo${b.chapters.length > 1 ? 's' : ''}</p><div class="chapter-grid">${b.chapters.map((_, ci) => `<a href="/biblia/${b.abbr}/${ci + 1}/">${ci + 1}</a>`).join('')}</div>${BIBLE_NOTE}`
+  });
+  b.chapters.forEach((verses, ci) => {
+    const n = ci + 1;
+    const prev = ci > 0 ? { u: `/biblia/${b.abbr}/${n - 1}/`, t: `${b.name} ${n - 1}` } : bi > 0 ? { u: `/biblia/${BOOK_LIST[bi - 1].abbr}/${BOOK_LIST[bi - 1].chapters.length}/`, t: `${BOOK_LIST[bi - 1].name} ${BOOK_LIST[bi - 1].chapters.length}` } : null;
+    const next = ci < b.chapters.length - 1 ? { u: `/biblia/${b.abbr}/${n + 1}/`, t: `${b.name} ${n + 1}` } : bi < BOOK_LIST.length - 1 ? { u: `/biblia/${BOOK_LIST[bi + 1].abbr}/1/`, t: `${BOOK_LIST[bi + 1].name} 1` } : null;
+    const pager = `<div class="bible-pager">${prev ? `<a href="${prev.u}" rel="prev">← ${esc(prev.t)}</a>` : '<span></span>'}<a href="/biblia/${b.abbr}/">Capítulos</a>${next ? `<a href="${next.u}" rel="next">${esc(next.t)} →</a>` : '<span></span>'}</div>`;
+    addPage({
+      url: `/biblia/${b.abbr}/${n}/`, active: 'biblia', title: `${b.name} ${n} · Bíblia · Conjunto Esperança`, desc: verses.slice(0, 2).join(' ').slice(0, 155),
+      body: `${bibleCrumb(`<a href="/biblia/${b.abbr}/">${esc(b.name)}</a>`, String(n))}<article class="bible-chapter"><h1>${esc(b.name)} ${n}</h1>${verses.map((t, vi) => `<p class="verse" id="v${vi + 1}"><b>${vi + 1}</b> ${esc(t)}</p>`).join('')}</article>${pager}<p class="bible-note">Compare com a ARC atual: <a href="${BIBLE_BASE}/${b.abbr}/${n}" target="_blank" rel="noopener noreferrer">${esc(b.name)} ${n} no bibliaonline.com.br ↗</a></p>${BIBLE_NOTE}`
+    });
+  });
+});
+
 function render(pg) {
   const abs = (u) => (SITE ? SITE + u : u);
   const ogImage = SITE ? `<meta property="og:image" content="${SITE}/logo-igreja.webp">` : '';
@@ -161,9 +205,7 @@ ${canonical}
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="style" href="${FONTS}" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="${FONTS}"></noscript>
-<style>
-${css}
-</style>
+<link rel="stylesheet" href="/assets/${cssName}">
 ${pg.head}
 </head>
 <body>
@@ -186,6 +228,7 @@ fs.mkdirSync(path.join(OUT, 'assets'), { recursive: true });
 fs.cpSync(path.join(ROOT, 'assets'), path.join(OUT, 'assets'), { recursive: true });
 ['logo-igreja.webp', 'logo-simbolo.webp'].forEach((f) => fs.copyFileSync(path.join(ROOT, f), path.join(OUT, f)));
 fs.writeFileSync(path.join(OUT, 'assets', appName), appJs);
+fs.writeFileSync(path.join(OUT, 'assets', cssName), css);
 pages.forEach((pg) => {
   const dir = path.join(OUT, pg.url);
   fs.mkdirSync(dir, { recursive: true });

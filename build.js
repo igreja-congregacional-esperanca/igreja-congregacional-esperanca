@@ -94,7 +94,9 @@ const slugs = new Set();
 posts.forEach((p) => { if (slugs.has(p.slug)) throw new Error('Slug repetido: ' + p.slug); slugs.add(p.slug); });
 const foundation = json('content/texto-base.json');
 const events = json('content/eventos.json');
-const videos = json('content/videos.json').map((v) => ({ ...v, l: fs.existsSync(path.join(ROOT, 'assets/yt', v.id + '.jpg')) ? 1 : 0 }));
+// Títulos do YouTube às vezes trazem separadores repetidos ("A | | B"); mostramos um só. (src/app.js faz o mesmo ao atualizar a lista.)
+const cleanVideoTitle = (t) => String(t || '').replace(/\s*\|(?:\s*\|)+\s*/g, ' | ').replace(/\s+/g, ' ').trim();
+const videos = json('content/videos.json').map((v) => ({ ...v, title: cleanVideoTitle(v.title), l: fs.existsSync(path.join(ROOT, 'assets/yt', v.id + '.jpg')) ? 1 : 0 }));
 
 // ---------- peças de HTML ----------
 const css = read('src/style.css');
@@ -143,14 +145,14 @@ const REDIRECT = `<script>(function(){var h=location.hash.slice(1);if(!h)return;
 function addPage({ url, title, desc, active, body, head = '', article = null }) { pages.push({ url, title, desc, active, body, head, article }); }
 
 const eventCard = (e, h = 'h3') => `<div class="card"><span class="tag">${esc(e.dia)}</span><${h}>${esc(e.titulo)}</${h}><div class="meta">${esc(e.detalhe)}</div></div>`;
-const visitSection = () => `<section id="visite"><div class="sec"><h2>Venha nos visitar</h2><a href="${MAPS}" target="_blank" rel="noopener noreferrer">Como chegar →</a></div><div class="grid">${events.map((e) => eventCard(e)).join('')}<div class="card"><span class="tag">Endereço</span><h3>${esc(CHURCH.street)}</h3><div class="meta">Conjunto Esperança · ${esc(CHURCH.city)} — ${esc(CHURCH.region)}, ${esc(CHURCH.postalCode)}</div></div></div></section>`;
+const visitSection = () => `<section id="visite"><div class="sec"><h2>Venha nos visitar</h2><a href="${MAPS}" target="_blank" rel="noopener noreferrer">Como chegar →</a></div><div class="grid">${events.map((e) => eventCard(e)).join('')}<div class="card"><span class="tag">Endereço</span><h3>Onde estamos</h3><div class="meta">${esc(CHURCH.street)} — Conjunto Esperança · ${esc(CHURCH.city)} — ${esc(CHURCH.region)}, ${esc(CHURCH.postalCode)}</div></div></div></section>`;
 
 addPage({
   url: '/', active: 'inicio', head: REDIRECT,
   title: 'Igreja Evangélica Congregacional Conjunto Esperança · Fortaleza', desc: 'Igreja Evangélica Congregacional no Conjunto Esperança, em Fortaleza (CE). Culto aos domingos, das 10h às 12h, devocionais, vídeos e Bíblia online.',
   body: `<section class="hero"><small>Igreja Evangélica Congregacional · Conjunto Esperança · Fortaleza</small><h1>Tudo para a glória de Deus, no culto e na vida.</h1><p>Devocionais e reflexões da nossa igreja, fundamentados nas Escrituras e centrados em Cristo.</p><a class="btn" href="/devocionais/">Ler devocionais</a><a class="btn ghost" href="/eventos/">Ver cultos</a></section>` +
     visitSection() +
-    `<div class="sec"><h2>Texto-base da igreja</h2><a href="/texto-base/">Ler o texto-base da igreja →</a></div><div class="card" style="margin-bottom:36px"><span class="tag">${esc(foundation.ref)}</span><h3>Texto-base para a igreja</h3><p>${esc(foundation.text[0])}</p><div class="meta">${esc(foundation.author)} · ${fmt(foundation.date)}</div></div>` +
+    `<div class="sec"><h2>Texto-base da igreja</h2><a href="/texto-base/">Ler o texto-base da igreja →</a></div><div class="card" style="margin-bottom:36px"><span class="tag">Texto-base</span><h3>${esc(foundation.ref)}</h3><p>${esc(foundation.text[0])}</p><div class="meta">${esc(foundation.author)} · ${fmt(foundation.date)}</div></div>` +
     `<div class="sec"><h2>A igreja em imagens</h2><a href="${MAPS}" target="_blank" rel="noopener noreferrer">Ver perfil no Google Maps →</a></div>${gallery()}` +
     youtubeSection() + `<div class="sec"><h2>Últimos devocionais</h2><a href="/devocionais/">Ver todos os devocionais →</a></div><div class="grid">${posts.slice(0, 3).map((p) => card(p)).join('')}</div>`
 });
@@ -160,21 +162,22 @@ addPage({
 });
 const cats = ['Todos'].concat(posts.map((p) => p.cat).filter((v, i, a) => a.indexOf(v) === i));
 addPage({
-  url: '/devocionais/', active: 'devocionais', title: 'Devocionais · ' + SHORT_BRAND, desc: 'Palavras curtas para alimentar a sua fé a cada semana.',
+  url: '/devocionais/', active: 'devocionais', title: 'Devocionais · ' + SHORT_BRAND, desc: 'Devocionais semanais da Igreja Evangélica Congregacional Conjunto Esperança, em Fortaleza: palavras curtas, fundamentadas nas Escrituras, para alimentar a sua fé.',
   body: `${crumb('Devocionais')}<h1 class="page-title">Devocionais</h1><p class="lead">Palavras curtas para alimentar a sua fé a cada semana.</p><div class="filters" hidden>${cats.map((c, i) => `<button type="button" class="${i === 0 ? 'on' : ''}" data-c="${esc(c)}">${esc(c)}</button>`).join('')}</div><div class="grid">${posts.map((p) => card(p, 'h2')).join('')}</div>`
 });
 posts.forEach((p) => addPage({
-  url: `/devocionais/${p.slug}/`, active: 'devocionais', title: `${p.title} · Devocional · ${SHORT_BRAND}`, desc: clip(p.paragraphs[0], 155),
+  url: `/devocionais/${p.slug}/`, active: 'devocionais', title: `${p.title} · Devocional · ${SHORT_BRAND}`, desc: clip(p.paragraphs.slice(0, 2).join(' '), 155),
   article: { date: p.date, author: p.author, cat: p.cat },
   body: `<article><a class="back" href="/devocionais/">← Todos os devocionais</a><div style="margin-top:22px"><span class="tag">${esc(p.cat)}</span></div><h1>${esc(p.title)}</h1><div class="meta" style="margin-bottom:6px">${esc(p.author)} · ${fmt(p.date)}</div><div class="ref">${refHtml(p.ref)}</div>${p.paragraphs.map((x) => `<p>${esc(x)}</p>`).join('')}</article>`
 }));
 addPage({
-  url: '/videos/', active: 'videos', title: 'Vídeos · ' + SHORT_BRAND, desc: 'Mensagens, cultos e transmissões da Igreja Evangélica Congregacional Conjunto Esperança.',
+  url: '/videos/', active: 'videos', title: 'Vídeos · ' + SHORT_BRAND, desc: 'Assista às mensagens, cultos e transmissões ao vivo da Igreja Evangélica Congregacional Conjunto Esperança, em Fortaleza.',
   body: `${crumb('Vídeos')}<h1 class="page-title">Vídeos do canal</h1><p class="lead">Mensagens, cultos e transmissões da Igreja Evangélica Congregacional Conjunto Esperança.</p>${youtubeSection()}`
 });
 addPage({
-  url: '/eventos/', active: 'eventos', title: 'Cultos e eventos · ' + SHORT_BRAND, desc: 'Horários dos cultos e endereço: R. 104, 227 — Conjunto Esperança, Fortaleza.',
-  body: `${crumb('Eventos')}<h1 class="page-title">Eventos e cultos</h1><p class="lead">Venha nos visitar, você é bem-vindo.</p><div class="grid">${events.map((e) => eventCard(e, 'h2')).join('')}</div>`
+  url: '/eventos/', active: 'eventos', title: 'Cultos e eventos · ' + SHORT_BRAND, desc: 'Horários dos cultos da Igreja Evangélica Congregacional Conjunto Esperança e como chegar: R. 104, 227 — Conjunto Esperança, Fortaleza (CE).',
+  body: `${crumb('Eventos')}<h1 class="page-title">Eventos e cultos</h1><p class="lead">Venha nos visitar, você é bem-vindo.</p><div class="grid">${events.map((e) => eventCard(e, 'h2')).join('')}</div>` +
+    `<section id="como-chegar" style="margin-top:36px"><h2>Como chegar</h2><p>A Igreja Evangélica Congregacional Conjunto Esperança fica na ${esc(CHURCH.street)}, no bairro Conjunto Esperança, em ${esc(CHURCH.city)} (${esc(CHURCH.region)}), CEP ${esc(CHURCH.postalCode)}. <a href="${MAPS}" target="_blank" rel="noopener noreferrer">Abrir a rota no Google Maps →</a></p><p>Dúvidas sobre horários ou como chegar? Fale conosco pelo WhatsApp: <a href="https://wa.me/5585987686622">${esc(CHURCH.phone.replace('+55 ', '(').replace(' ', ') '))}</a>.</p></section>`
 });
 
 // ---------- leitor da Bíblia (Almeida Revista e Corrigida, edição de 1911, domínio público) ----------
@@ -228,6 +231,7 @@ const churchLd = () => ({
   telephone: CHURCH.phone,
   address: { '@type': 'PostalAddress', streetAddress: CHURCH.street, addressLocality: CHURCH.city, addressRegion: CHURCH.region, postalCode: CHURCH.postalCode, addressCountry: 'BR' },
   geo: { '@type': 'GeoCoordinates', latitude: CHURCH.lat, longitude: CHURCH.lng },
+  areaServed: { '@type': 'City', name: CHURCH.city },
   hasMap: MAPS,
   sameAs: [INSTAGRAM, CHANNEL],
   openingHoursSpecification: CHURCH.hours.map((h) => ({ '@type': 'OpeningHoursSpecification', dayOfWeek: h.day, opens: h.opens, closes: h.closes }))
@@ -249,11 +253,24 @@ const articleLd = (pg) => ({
   description: pg.desc,
   inLanguage: 'pt-BR',
   datePublished: pg.article.date,
+  dateModified: pg.article.date,
   articleSection: pg.article.cat,
   author: { '@type': 'Person', name: pg.article.author.replace(/^Pr\.?\s+/i, '') },
   publisher: { '@type': 'Organization', name: BRAND, url: SITE + '/', logo: { '@type': 'ImageObject', url: SITE + '/logo-igreja.webp' } },
   image: [SITE + '/og-image.jpg'],
   mainEntityOfPage: { '@type': 'WebPage', '@id': SITE + pg.url }
+});
+
+// Um VideoObject por vídeo listado em /videos/ (elegível a resultados de vídeo no Google).
+const videoLd = (v) => ({
+  '@type': 'VideoObject',
+  name: v.title,
+  description: `${v.title}. Vídeo do canal da ${BRAND}, em Fortaleza.`,
+  thumbnailUrl: [v.l ? `${SITE}/assets/yt/${v.id}.jpg` : `https://i.ytimg.com/vi/${v.id}/mqdefault.jpg`],
+  uploadDate: v.publishedAt,
+  embedUrl: `https://www.youtube.com/embed/${v.id}`,
+  inLanguage: 'pt-BR',
+  publisher: { '@id': SITE + '/#igreja' }
 });
 
 function render(pg) {
@@ -276,7 +293,7 @@ function render(pg) {
   }
   let ld = '';
   if (SITE && indexable) {
-    const graph = pg.url === '/' ? [websiteLd(), churchLd()] : [breadcrumbLd(pg)].concat(pg.article ? [articleLd(pg)] : []);
+    const graph = pg.url === '/' ? [websiteLd(), churchLd()] : [breadcrumbLd(pg)].concat(pg.article ? [articleLd(pg)] : [], pg.url === '/videos/' ? videos.filter((v) => v.publishedAt).map(videoLd) : []);
     ld = ldScript({ '@context': 'https://schema.org', '@graph': graph });
   }
   const nav = NAV.map(([href, label, key, external]) => `<a href="${href}"${key === pg.active ? ' class="on"' : ''}${external ? ' target="_blank" rel="noopener noreferrer" title="Abre a Bíblia online (ARC) em outro site"' : ''}>${label}${external ? ' ↗' : ''}</a>`).join('');
@@ -341,6 +358,11 @@ if (SITE) {
   const LASTMOD = { '/': newest([posts[0] && posts[0].date, foundation.date, videoDay]), '/texto-base/': foundation.date, '/devocionais/': posts[0] ? posts[0].date : '', '/videos/': videoDay };
   posts.forEach((p) => { LASTMOD[`/devocionais/${p.slug}/`] = p.date; });
   const lastmod = (pg) => (LASTMOD[pg.url] ? `<lastmod>${LASTMOD[pg.url]}</lastmod>` : '');
-  fs.writeFileSync(path.join(OUT, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${pages.map((pg) => `<url><loc>${SITE}${pg.url}</loc>${lastmod(pg)}</url>`).join('\n')}\n</urlset>\n`);
+  // sitemap.xml é um índice com dois arquivos: páginas do site e Bíblia (1.189 capítulos + livros). Assim o Search Console mostra a indexação de cada grupo separadamente.
+  const urlset = (list) => `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${list.map((pg) => `<url><loc>${SITE}${pg.url}</loc>${lastmod(pg)}</url>`).join('\n')}\n</urlset>\n`;
+  const isBible = (pg) => pg.url.startsWith('/biblia/') && pg.url !== '/biblia/';
+  fs.writeFileSync(path.join(OUT, 'sitemap-paginas.xml'), urlset(pages.filter((pg) => !isBible(pg))));
+  fs.writeFileSync(path.join(OUT, 'sitemap-biblia.xml'), urlset(pages.filter(isBible)));
+  fs.writeFileSync(path.join(OUT, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n<sitemap><loc>${SITE}/sitemap-paginas.xml</loc></sitemap>\n<sitemap><loc>${SITE}/sitemap-biblia.xml</loc></sitemap>\n</sitemapindex>\n`);
 }
 console.log(`Site gerado em public/: ${pages.length} páginas${SITE ? '' : ' (sem SITE_URL: sitemap e links canônicos omitidos)'}.`);

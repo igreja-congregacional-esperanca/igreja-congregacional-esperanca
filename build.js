@@ -144,7 +144,7 @@ const REDIRECT = `<script>(function(){var h=location.hash.slice(1);if(!h)return;
 // `article` ({ date, author, cat }) marca devocionais: gera og:type=article e JSON-LD Article.
 function addPage({ url, title, desc, active, body, head = '', article = null }) { pages.push({ url, title, desc, active, body, head, article }); }
 
-const eventCard = (e, h = 'h3') => `<div class="card"><span class="tag">${esc(e.dia)}</span><${h}>${esc(e.titulo)}</${h}><div class="meta">${esc(e.detalhe)}</div></div>`;
+const eventCard = (e, h = 'h3') => `<div class="card"><span class="tag">${esc(e.dia)}</span><${h}>${e.href ? `<a href="${esc(e.href)}">${esc(e.titulo)}</a>` : esc(e.titulo)}</${h}><div class="meta">${esc(e.detalhe)}</div>${e.href ? `<a class="event-more" href="${esc(e.href)}">Saiba mais →</a>` : ''}</div>`;
 const visitSection = () => `<section id="visite"><div class="sec"><h2>Venha nos visitar</h2><a href="${MAPS}" target="_blank" rel="noopener noreferrer">Como chegar →</a></div><div class="grid">${events.map((e) => eventCard(e)).join('')}<div class="card"><span class="tag">Endereço</span><h3>Onde estamos</h3><div class="meta">${esc(CHURCH.street)} — Conjunto Esperança · ${esc(CHURCH.city)} — ${esc(CHURCH.region)}, ${esc(CHURCH.postalCode)}</div></div></div></section>`;
 
 addPage({
@@ -178,6 +178,20 @@ addPage({
   url: '/eventos/', active: 'eventos', title: 'Cultos e eventos · ' + SHORT_BRAND, desc: 'Horários dos cultos da Igreja Evangélica Congregacional Conjunto Esperança e como chegar: R. 104, 227 — Conjunto Esperança, Fortaleza (CE).',
   body: `${crumb('Eventos')}<h1 class="page-title">Eventos e cultos</h1><p class="lead">Venha nos visitar, você é bem-vindo.</p><div class="grid">${events.map((e) => eventCard(e, 'h2')).join('')}</div>` +
     `<section id="como-chegar" style="margin-top:36px"><h2>Como chegar</h2><p>A Igreja Evangélica Congregacional Conjunto Esperança fica na ${esc(CHURCH.street)}, no bairro Conjunto Esperança, em ${esc(CHURCH.city)} (${esc(CHURCH.region)}), CEP ${esc(CHURCH.postalCode)}. <a href="${MAPS}" target="_blank" rel="noopener noreferrer">Abrir a rota no Google Maps →</a></p><p>Dúvidas sobre horários ou como chegar? Fale conosco pelo WhatsApp: <a href="https://wa.me/5585987686622">${esc(CHURCH.phone.replace('+55 ', '(').replace(' ', ') '))}</a>.</p></section>`
+});
+
+const CONF = { slug: '/eventos/conferencia-aconselhamento-biblico/', base: 'conferencia-aconselhamento-biblico', w: 1080, h: 1350 };
+addPage({
+  url: CONF.slug, active: 'eventos', title: 'Conferência de Aconselhamento Bíblico · ' + SHORT_BRAND,
+  desc: 'Vem aí a 1ª Conferência de Aconselhamento Bíblico, com o Pr. Elder Pinto. Tema: A Alma Sitiada. Igreja Evangélica Congregacional Conjunto Esperança, Fortaleza.',
+  body: `<div class="crumb"><a href="/">Início</a> › <a href="/eventos/">Eventos</a> › Conferência de Aconselhamento Bíblico</div>` +
+    `<article><a class="back" href="/eventos/">← Todos os eventos</a><div style="margin-top:22px"><span class="tag">Vem aí</span></div><h1>1ª Conferência de Aconselhamento Bíblico</h1><p class="lead">Tema: <strong>A Alma Sitiada</strong> — quando a multidão dos pensamentos adoece o corpo.</p>` +
+    `<figure class="event-flyer"><img src="/assets/${CONF.base}-1080.webp" srcset="/assets/${CONF.base}-540.webp 540w, /assets/${CONF.base}-1080.webp 1080w" sizes="(max-width:720px) 92vw, 680px" width="${CONF.w}" height="${CONF.h}" alt="Cartaz da 1ª Conferência de Aconselhamento Bíblico, tema A Alma Sitiada, com o Pr. Elder Pinto, na Igreja Evangélica Congregacional Conjunto Esperança, Rua 104, nº 227" decoding="async"></figure>` +
+    `<p>Amados irmãos, graça e paz!</p><p>Sabemos o peso que muitos carregam: o trabalho que não sai da cabeça, as preocupações que tiram o sono. Você não está sozinho. A igreja é uma família que cuida.</p>` +
+    `<div class="ref">“Na multidão dos meus pensamentos dentro de mim, as tuas consolações recrearam a minha alma.”<br>${refHtml('Salmo 94.19')}</div>` +
+    `<p>A Igreja Evangélica Congregacional Conjunto Esperança convida você para a <strong>1ª Conferência de Aconselhamento Bíblico</strong>, com o <strong>Pr. Elder Pinto</strong>. Vamos olhar para o que a Palavra de Deus ensina sobre a ansiedade, os pensamentos que nos cercam e o cuidado de Deus com a nossa alma.</p>` +
+    `<h2>Informações</h2><ul class="event-info"><li><strong>Data e horário:</strong> em breve</li><li><strong>Local:</strong> ${esc(CHURCH.street)} — Conjunto Esperança, ${esc(CHURCH.city)} (${esc(CHURCH.region)})</li></ul>` +
+    `<p>Traga a família e convide amigos. Esperamos você! Dúvidas? Fale conosco pelo WhatsApp: <a href="https://wa.me/5585987686622">${esc(CHURCH.phone.replace('+55 ', '(').replace(' ', ') '))}</a>. <a href="${MAPS}" target="_blank" rel="noopener noreferrer">Como chegar →</a></p></article>`
 });
 
 // ---------- leitor da Bíblia (Almeida Revista e Corrigida, edição de 1911, domínio público) ----------

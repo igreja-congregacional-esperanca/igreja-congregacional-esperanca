@@ -319,6 +319,12 @@ function render(pg) {
 <title>${esc(pg.title)}</title>
 <meta name="description" content="${esc(pg.desc)}">
 <meta name="theme-color" content="#398b26">
+<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-W6Z4KDJ8"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+</script>
 ${robots}
 ${social.join('\n')}
 ${canonical}

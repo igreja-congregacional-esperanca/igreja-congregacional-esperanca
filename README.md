@@ -18,8 +18,8 @@ O conteúdo de Mateus 11.28 aparece numa seção própria como **Texto-base da i
 
 ## Arquivos principais
 
-- `build.js` — gera as páginas em `public/` (início, texto-base, devocionais, vídeos, eventos, Bíblia, 404, sitemap e robots), incluindo as meta tags e os dados estruturados (JSON-LD).
-- `content/` — textos: `devocionais/*.md`, `texto-base.json`, `eventos.json` e `videos.json` (prévias dos vídeos).
+- `build.js` — gera as páginas em `public/` (início, texto-base, devocionais, vídeos, eventos, Bíblia, 404, sitemap e robots), incluindo as meta tags e os dados estruturados (JSON-LD). Também gera `feed.xml` (RSS), `busca.json` (índice da busca) e `agenda/*.ics` (calendário).
+- `content/` — textos: `devocionais/*.md`, `texto-base.json`, `eventos.json` (com o campo opcional `agenda`, veja abaixo) e `videos.json` (prévias dos vídeos).
 - `content/biblia/` — texto da Bíblia (Almeida Revista e Corrigida, edição de 1911, domínio público); veja `content/biblia/LEIA-ME.md` para origem e cuidados. O `build.js` gera uma página por capítulo em `/biblia/<livro>/<capítulo>/`.
 - `src/` — `style.css`, `app.js` (menu, filtro, carrossel e YouTube), cabeçalho e rodapé.
 - `api/youtube.js` — feed de vídeos recentes e estado de transmissão ao vivo.
@@ -28,6 +28,20 @@ O conteúdo de Mateus 11.28 aparece numa seção própria como **Texto-base da i
 - `vercel.json` — build e cabeçalhos de cache.
 - `YOUTUBE_INTEGRATION.md` — funcionamento, referências e configuração da integração.
 - `PHOTO_SOURCES.md` — origem e referências das fotografias.
+
+## Recursos do site
+
+- **Busca nos devocionais** (`/devocionais/`): caixa de busca que ignora acentos e maiúsculas, exige todos os termos digitados e procura no título, categoria, autor, referência e texto. Combina com o filtro de categoria. O índice `busca.json` é gerado no build e só é baixado quando a pessoa começa a digitar; sem JavaScript a caixa não aparece e a lista continua completa. Nada a configurar: um novo devocional entra na busca sozinho.
+- **RSS** (`/feed.xml`): os 20 devocionais mais recentes, gerado a cada build (precisa de `SITE_URL`, porque o RSS exige endereços absolutos). Há um link na página de devocionais e a indicação automática no `<head>` para leitores de feed.
+- **Adicionar ao calendário:** eventos de `content/eventos.json` com o campo `agenda` ganham os botões **Google Agenda** e **Apple / Outlook (.ics)**, na página de eventos e na seção "Venha nos visitar" da página inicial. Não há integração com o Google: o botão é um link que abre a agenda já preenchida, e o `.ics` é um arquivo padrão gerado em `/agenda/<id>.ics`. Exemplo:
+
+  ```json
+  { "dia": "Quarta-feira", "titulo": "Culto de doutrina", "detalhe": "19h30 · R. 104, 227",
+    "agenda": { "id": "culto-doutrina", "byday": "WE", "inicio": "19:30", "fim": "21:00" } }
+  ```
+
+  `byday` usa `SU, MO, TU, WE, TH, FR, SA`; o evento é semanal e recorrente. Os horários são de Fortaleza (UTC-3, sem horário de verão) e o primeiro evento cai na próxima ocorrência a partir do build. Eventos sem `agenda` (como a conferência, ainda sem data) ficam sem botão. O horário de término é só para o calendário; mantenha-o coerente com o culto.
+- **Bíblia** em `/biblia/`, **vídeos** e **transmissão ao vivo** do YouTube, **texto-base** e **galeria**: veja as seções abaixo e `YOUTUBE_INTEGRATION.md`.
 
 ## SEO
 

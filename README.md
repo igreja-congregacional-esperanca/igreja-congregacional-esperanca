@@ -8,7 +8,7 @@ A página inicial e a seção **Vídeos** mostram imediatamente seis prévias gu
 
 A lista de vídeos é consultada a cada 30 minutos e o estado da transmissão a cada 5 minutos (a cada 90 segundos nos horários de culto: domingo 8h–13h e quarta-feira 18h–22h, horário de Fortaleza). As consultas pausam com a aba em segundo plano. Sem chave API, a cache da Vercel da transmissão é de 90 segundos. Assim, novos vídeos e o estado ao vivo costumam atualizar em cerca de 2–4 minutos depois de o YouTube os publicar/propagar, podendo a própria propagação do YouTube acrescentar atraso. Não é instantâneo nem exige editar o site. Não precisa de Supabase. Veja `YOUTUBE_INTEGRATION.md` para detalhes e configuração opcional da API.
 
-O conteúdo de Mateus 11.28 aparece numa seção própria como **Texto-base da igreja**, separado dos devocionais. A faixa verde animada mostra os horários de domingo e quarta-feira; o horário de quarta-feira está marcado como **a confirmar**.
+O conteúdo de Mateus 11.28 aparece numa seção própria como **Texto-base da igreja**, separado dos devocionais. A faixa verde animada mostra os horários de domingo e quarta-feira; o culto de doutrina de quarta-feira é às 19h30.
 
 ## Como publicar um novo devocional
 
@@ -32,7 +32,7 @@ O conteúdo de Mateus 11.28 aparece numa seção própria como **Texto-base da i
 ## SEO
 
 - **Nome oficial:** "Igreja Evangélica Congregacional Conjunto Esperança" (igual ao logo e à fachada), definido em `BRAND` no topo do `build.js`. "Igreja Congregacional Conjunto Esperança" (nome que ainda consta na ficha do Google Maps) fica só como `alternateName` nos dados estruturados.
-- **Dados da igreja (`CHURCH` no `build.js`):** endereço, telefone, coordenadas e horário do culto de domingo alimentam o JSON-LD `Church` da página inicial. Mantenha-os iguais ao rodapé (`src/footer.html`), a `content/eventos.json` e à ficha do Google Maps. O culto de quarta-feira só entra aí quando houver horário confirmado.
+- **Dados da igreja (`CHURCH` no `build.js`):** endereço, telefone, coordenadas e horário do culto de domingo alimentam o JSON-LD `Church` da página inicial. Mantenha-os iguais ao rodapé (`src/footer.html`), a `content/eventos.json` e à ficha do Google Maps. O culto de quarta-feira (19h30) também consta ali; o término (21h00) é uma estimativa.
 - **Sem `SITE_URL` não há:** link canônico, JSON-LD, `og:image`, `twitter:card` nem `sitemap.xml`. O valor deve ser exatamente o endereço publicado (`https://www.iecesperanca.com.br`).
 - **Títulos:** o ideal é até 60 caracteres, que é onde o Google costuma cortar. Páginas internas usam o sufixo curto `SHORT_BRAND` ("Conjunto Esperança"); só a página inicial leva o nome completo (63 caracteres). Descrições até 155 caracteres, cortadas sem partir palavra (`clip`).
 - **Dados estruturados:** `Church` + `WebSite` na página inicial, `BreadcrumbList` em todas as páginas internas e `Article` em cada devocional (o autor sai do campo `autor`, sem o "Pr.")), `VideoObject` para cada vídeo em `/videos/` e `areaServed` (Fortaleza) no `Church`.

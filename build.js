@@ -320,6 +320,7 @@ function render(pg) {
 <title>${esc(pg.title)}</title>
 <meta name="description" content="${esc(pg.desc)}">
 <meta name="theme-color" content="#398b26">
+<meta name="msvalidate.01" content="F5D6C4801880693C64A49AFB613AC14E" />
 <script async src="https://www.googletagmanager.com/gtm.js?id=GTM-W6Z4KDJ8"></script>
 <script>
   window.dataLayer = window.dataLayer || [];

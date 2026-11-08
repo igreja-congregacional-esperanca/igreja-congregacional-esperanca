@@ -2,12 +2,24 @@
   {
     "dia": "Domingo",
     "titulo": "Culto de celebração",
-    "detalhe": "10h às 12h · R. 104, 227"
+    "detalhe": "10h às 12h · R. 104, 227",
+    "agenda": {
+      "id": "culto-celebracao",
+      "byday": "SU",
+      "inicio": "10:00",
+      "fim": "12:00"
+    }
   },
   {
     "dia": "Quarta-feira",
     "titulo": "Culto de doutrina",
-    "detalhe": "19h30 · R. 104, 227"
+    "detalhe": "19h30 · R. 104, 227",
+    "agenda": {
+      "id": "culto-doutrina",
+      "byday": "WE",
+      "inicio": "19:30",
+      "fim": "21:00"
+    }
   },
   {
     "dia": "Em breve",

@@ -127,7 +127,7 @@ function icsFile(e) {
     'BEGIN:VEVENT', 'UID:' + e.agenda.id + '@iecesperanca.com.br', 'DTSTAMP:' + i.start, 'DTSTART:' + i.start, 'DTEND:' + i.end, 'RRULE:' + i.rrule,
     'SUMMARY:' + icsEsc(i.title), 'LOCATION:' + icsEsc(i.where), 'DESCRIPTION:' + icsEsc(e.titulo + ' — todos são bem-vindos.'), 'END:VEVENT', 'END:VCALENDAR'].join('\r\n') + '\r\n';
 }
-const calButtons = (e) => e.agenda ? `<div class="cal"><span>Adicionar ao calendário:</span><a href="${esc(googleCal(e))}" target="_blank" rel="noopener noreferrer">Google Agenda</a><a href="/agenda/${esc(e.agenda.id)}.ics" download>Apple / Outlook (.ics)</a></div>` : '';
+const calButtons = (e) => e.agenda ? `<div class="cal"><span>Adicionar ao calendário:</span><a href="${esc(googleCal(e))}" target="_blank" rel="noopener noreferrer">Google Agenda</a></div>` : '';
 // Títulos do YouTube às vezes trazem separadores repetidos ("A | | B"); mostramos um só. (src/app.js faz o mesmo ao atualizar a lista.)
 const cleanVideoTitle = (t) => String(t || '').replace(/\s*\|(?:\s*\|)+\s*/g, ' | ').replace(/\s+/g, ' ').trim();
 const videos = json('content/videos.json').map((v) => ({ ...v, title: cleanVideoTitle(v.title), l: fs.existsSync(path.join(ROOT, 'assets/yt', v.id + '.jpg')) ? 1 : 0 }));

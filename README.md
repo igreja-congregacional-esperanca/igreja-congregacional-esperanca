@@ -33,7 +33,7 @@ O conteúdo de Mateus 11.28 aparece numa seção própria como **Texto-base da i
 
 - **Busca nos devocionais** (`/devocionais/`): caixa de busca que ignora acentos e maiúsculas, exige todos os termos digitados e procura no título, categoria, autor, referência e texto. Combina com o filtro de categoria. O índice `busca.json` é gerado no build e só é baixado quando a pessoa começa a digitar; sem JavaScript a caixa não aparece e a lista continua completa. Nada a configurar: um novo devocional entra na busca sozinho.
 - **RSS** (`/feed.xml`): os 20 devocionais mais recentes, gerado a cada build (precisa de `SITE_URL`, porque o RSS exige endereços absolutos). Há um link na página de devocionais e a indicação automática no `<head>` para leitores de feed.
-- **Adicionar ao calendário:** eventos de `content/eventos.json` com o campo `agenda` ganham os botões **Google Agenda** e **Apple / Outlook (.ics)**, na página de eventos e na seção "Venha nos visitar" da página inicial. Não há integração com o Google: o botão é um link que abre a agenda já preenchida, e o `.ics` é um arquivo padrão gerado em `/agenda/<id>.ics`. Exemplo:
+- **Adicionar ao calendário:** eventos de `content/eventos.json` com o campo `agenda` ganham o botão **Google Agenda** (o botão "Apple / Outlook (.ics)" foi removido em 09/11/2026; os arquivos `.ics` ainda são gerados em `/agenda/`, mas sem link na página), na página de eventos e na seção "Venha nos visitar" da página inicial. Não há integração com o Google: o botão é um link que abre a agenda já preenchida, e o `.ics` é um arquivo padrão gerado em `/agenda/<id>.ics`. Exemplo:
 
   ```json
   { "dia": "Quarta-feira", "titulo": "Culto de doutrina", "detalhe": "19h30 · R. 104, 227",

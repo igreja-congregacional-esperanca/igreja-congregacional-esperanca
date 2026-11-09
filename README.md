@@ -26,6 +26,7 @@ O conteúdo de Mateus 11.28 aparece numa seção própria como **Texto-base da i
 - `assets/` — fotos da igreja em WebP (480/800 px; nomes com a largura, cache imutável).
 - `og-image.jpg`, `favicon.ico`, `apple-touch-icon.png` — imagem de compartilhamento (1200×630) e ícones quadrados, na raiz; o `build.js` os copia para `public/`.
 - `vercel.json` — build e cabeçalhos de cache.
+- `docs/` — documentação do trabalho: `registro-de-trabalho.md` (o que foi feito e o que ficou, **atualizar a cada sessão**), `seo/auditoria-2026-11-07.md` e `seo/briefing-paginas-institucionais.md`. Ver `CLAUDE.md`.
 - `YOUTUBE_INTEGRATION.md` — funcionamento, referências e configuração da integração.
 - `PHOTO_SOURCES.md` — origem e referências das fotografias.
 

@@ -1,5 +1,7 @@
 # Auditoria de SEO e GEO: 07/11/2026
 
+> Status atualizado: o andamento dos itens está em `docs/registro-de-trabalho.md`.
+
 Feita com a skill `seo-geo-elevenskill` (scripts `check_robots`, `audit_page`, `validate_sitemap`, `crawl_site`) sobre https://www.iecesperanca.com.br/ e revisão do código deste repositório.
 
 ## Situação
@@ -15,9 +17,9 @@ SEO técnico em bom estado, sem bloqueios de rastreio ou indexação.
 |---|---|---|---|
 | 1 | Alta (risco) | 97% do sitemap é Bíblia (1.255 URLs, ortografia de 1911, texto igual ao de muitos sites) | Pendente: ver no Search Console quantos capítulos estão indexados; se poucos, `noindex` nos capítulos (ver README, seção Bíblia) |
 | 2 | Média | Poucas páginas próprias da igreja (Quem somos, Contato e Comunidade são seções da home) | Briefing em `docs/seo/briefing-paginas-institucionais.md`; depende de conteúdo da igreja |
-| 3 | Média | GTM (`GTM-W6Z4KDJ8`) adicionado em 07/11 | Pendente: medir Core Web Vitals reais depois do deploy |
-| 4 | Baixa | `dateModified` igual a `datePublished` em todo devocional | Feito: campo opcional `atualizado:` |
-| 5 | Baixa | Sem `llms.txt` | Feito: gerado pelo `build.js` |
+| 3 | Média | GTM (`GTM-W6Z4KDJ8`) adicionado em 07/11 | Pendente: medir Core Web Vitals reais depois do deploy (ver `docs/registro-de-trabalho.md`) |
+| 4 | Baixa | `dateModified` igual a `datePublished` em todo devocional | Feito (PR #13, mesclado em 09/11): campo opcional `atualizado:` |
+| 5 | Baixa | Sem `llms.txt` | Feito (PR #13, mesclado em 09/11): gerado pelo `build.js`; horários dos cultos vindos de `eventos.json` no PR #16 (pendente de mesclagem) |
 | 6 | Baixa | Autor do `Article` sem página própria | Pendente: ligar à página do pastor quando existir (Quem somos) |
 | 7 | Pendência | Culto de quarta "a confirmar" | Incluir em `CHURCH.hours` e `eventos.json` quando confirmado |
 | 8 | Decisão | Todos os robôs de treino de IA estão liberados | Decisão da igreja |

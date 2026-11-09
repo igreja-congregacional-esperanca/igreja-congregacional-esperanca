@@ -106,6 +106,9 @@ footer p{margin:0 0 8px}
 .copy{border-top:1px solid var(--line);margin-top:30px;padding-top:18px;font-size:13px}
 .social-icon{display:inline-block;width:16px;height:16px;vertical-align:-3px;margin-right:6px;flex:none}
 .filters[hidden]{display:none}
+.cal{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px;font-size:13px;color:var(--muted)}.cal a{border:1px solid var(--line);border-radius:999px;padding:5px 13px;font-weight:500;color:var(--text)}.cal a:hover{border-color:var(--accent);color:var(--accent)}
+.busca{margin:0 0 14px}.busca[hidden]{display:none}.busca input{width:100%;max-width:420px;padding:10px 16px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--text);font:15px Inter,sans-serif}.busca input:focus{outline:2px solid var(--accent);outline-offset:1px}
+#q-none[hidden]{display:none}
 .card[hidden]{display:none}
 article .ref a{color:inherit}
 article .ref a:hover{color:var(--accent)}

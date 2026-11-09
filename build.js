@@ -95,6 +95,39 @@ const slugs = new Set();
 posts.forEach((p) => { if (slugs.has(p.slug)) throw new Error('Slug repetido: ' + p.slug); slugs.add(p.slug); });
 const foundation = json('content/texto-base.json');
 const events = json('content/eventos.json');
+
+// ---------- calendário (Google Agenda + arquivo .ics) ----------
+// Eventos com "agenda" em eventos.json (cultos semanais) ganham botões. Horários em Fortaleza (UTC-3, sem horário de verão).
+const BYDAY = { SU: 0, MO: 1, TU: 2, WE: 3, TH: 4, FR: 5, SA: 6 };
+const icsTime = (d) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+function nextStart(a, hm) {
+  const now = new Date(Date.now() - 3 * 3600e3); // "agora" em Fortaleza
+  const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  while (d.getUTCDay() !== BYDAY[a.byday]) d.setUTCDate(d.getUTCDate() + 1);
+  const [h, m] = hm.split(':').map(Number);
+  let t = new Date(d.getTime() + (h + 3) * 3600e3 + m * 60e3); // +3h: Fortaleza → UTC
+  if (t.getTime() <= Date.now()) t = new Date(t.getTime() + 7 * 86400e3); // já passou hoje: começa na semana seguinte
+  return t;
+}
+function agendaInfo(e) {
+  const a = e.agenda;
+  const s0 = nextStart(a, a.inicio), mins = (hm) => hm.split(':').reduce((x, y) => x * 60 + +y, 0);
+  const start = s0, end = new Date(s0.getTime() + (mins(a.fim) - mins(a.inicio)) * 60e3); // término = início + duração
+  return {
+    start: icsTime(start), end: icsTime(end), rrule: 'FREQ=WEEKLY;BYDAY=' + a.byday,
+    title: e.titulo + ' — Igreja Evangélica Congregacional Conjunto Esperança',
+    where: `${CHURCH.street}, Conjunto Esperança, ${CHURCH.city} - ${CHURCH.region}, ${CHURCH.postalCode}`
+  };
+}
+const googleCal = (e) => { const i = agendaInfo(e); return 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + encodeURIComponent(i.title) + '&dates=' + i.start + '/' + i.end + '&location=' + encodeURIComponent(i.where) + '&details=' + encodeURIComponent(e.titulo + ' (' + e.dia + ', ' + e.agenda.inicio.replace(':00', '').replace(':', 'h') + ')') + '&recurrence=' + encodeURIComponent('RRULE:' + i.rrule); };
+const icsEsc = (s) => String(s).replace(/[\\;,]/g, (c) => '\\' + c);
+function icsFile(e) {
+  const i = agendaInfo(e);
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Igreja Congregacional Conjunto Esperanca//Site//PT', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
+    'BEGIN:VEVENT', 'UID:' + e.agenda.id + '@iecesperanca.com.br', 'DTSTAMP:' + i.start, 'DTSTART:' + i.start, 'DTEND:' + i.end, 'RRULE:' + i.rrule,
+    'SUMMARY:' + icsEsc(i.title), 'LOCATION:' + icsEsc(i.where), 'DESCRIPTION:' + icsEsc(e.titulo + ' — todos são bem-vindos.'), 'END:VEVENT', 'END:VCALENDAR'].join('\r\n') + '\r\n';
+}
+const calButtons = (e) => e.agenda ? `<div class="cal"><span>Adicionar ao calendário:</span><a href="${esc(googleCal(e))}" target="_blank" rel="noopener noreferrer">Google Agenda</a><a href="/agenda/${esc(e.agenda.id)}.ics" download>Apple / Outlook (.ics)</a></div>` : '';
 // Títulos do YouTube às vezes trazem separadores repetidos ("A | | B"); mostramos um só. (src/app.js faz o mesmo ao atualizar a lista.)
 const cleanVideoTitle = (t) => String(t || '').replace(/\s*\|(?:\s*\|)+\s*/g, ' | ').replace(/\s+/g, ' ').trim();
 const videos = json('content/videos.json').map((v) => ({ ...v, title: cleanVideoTitle(v.title), l: fs.existsSync(path.join(ROOT, 'assets/yt', v.id + '.jpg')) ? 1 : 0 }));
@@ -145,7 +178,7 @@ const REDIRECT = `<script>(function(){var h=location.hash.slice(1);if(!h)return;
 // `article` ({ date, author, cat }) marca devocionais: gera og:type=article e JSON-LD Article.
 function addPage({ url, title, desc, active, body, head = '', article = null }) { pages.push({ url, title, desc, active, body, head, article }); }
 
-const eventCard = (e, h = 'h3') => `<div class="card"><span class="tag">${esc(e.dia)}</span><${h}>${e.href ? `<a href="${esc(e.href)}">${esc(e.titulo)}</a>` : esc(e.titulo)}</${h}><div class="meta">${esc(e.detalhe)}</div>${e.href ? `<a class="event-more" href="${esc(e.href)}">Saiba mais →</a>` : ''}</div>`;
+const eventCard = (e, h = 'h3') => `<div class="card"><span class="tag">${esc(e.dia)}</span><${h}>${e.href ? `<a href="${esc(e.href)}">${esc(e.titulo)}</a>` : esc(e.titulo)}</${h}><div class="meta">${esc(e.detalhe)}</div>${e.href ? `<a class="event-more" href="${esc(e.href)}">Saiba mais →</a>` : ''}${calButtons(e)}</div>`;
 const visitSection = () => `<section id="visite"><div class="sec"><h2>Venha nos visitar</h2><a href="${MAPS}" target="_blank" rel="noopener noreferrer">Como chegar →</a></div><div class="grid">${events.map((e) => eventCard(e)).join('')}<div class="card"><span class="tag">Endereço</span><h3>Onde estamos</h3><div class="meta">${esc(CHURCH.street)} — Conjunto Esperança · ${esc(CHURCH.city)} — ${esc(CHURCH.region)}, ${esc(CHURCH.postalCode)}</div></div></div></section>`;
 
 addPage({
@@ -164,7 +197,7 @@ addPage({
 const cats = ['Todos'].concat(posts.map((p) => p.cat).filter((v, i, a) => a.indexOf(v) === i));
 addPage({
   url: '/devocionais/', active: 'devocionais', title: 'Devocionais · ' + SHORT_BRAND, desc: 'Devocionais semanais da Igreja Evangélica Congregacional Conjunto Esperança, em Fortaleza: palavras curtas, fundamentadas nas Escrituras, para alimentar a sua fé.',
-  body: `${crumb('Devocionais')}<h1 class="page-title">Devocionais</h1><p class="lead">Palavras curtas para alimentar a sua fé a cada semana.</p><div class="filters" hidden>${cats.map((c, i) => `<button type="button" class="${i === 0 ? 'on' : ''}" data-c="${esc(c)}">${esc(c)}</button>`).join('')}</div><div class="grid">${posts.map((p) => card(p, 'h2')).join('')}</div>`
+  body: `${crumb('Devocionais')}<h1 class="page-title">Devocionais</h1><p class="lead">Palavras curtas para alimentar a sua fé a cada semana.${SITE ? ' <a href="/feed.xml">Assinar por RSS</a>' : ''}</p><div class="busca" id="busca" hidden><input type="search" id="q" placeholder="Buscar nos devocionais…" aria-label="Buscar nos devocionais" autocomplete="off"></div><div class="filters" hidden>${cats.map((c, i) => `<button type="button" class="${i === 0 ? 'on' : ''}" data-c="${esc(c)}">${esc(c)}</button>`).join('')}</div><p id="q-none" class="lead" hidden>Nenhum devocional encontrado para essa busca.</p><div class="grid">${posts.map((p) => card(p, 'h2')).join('')}</div>`
 });
 posts.forEach((p) => addPage({
   url: `/devocionais/${p.slug}/`, active: 'devocionais', title: `${p.title} · Devocional · ${SHORT_BRAND}`, desc: clip(p.paragraphs.slice(0, 2).join(' '), 155),
@@ -330,6 +363,7 @@ function render(pg) {
 ${robots}
 ${social.join('\n')}
 ${canonical}
+${SITE ? '<link rel="alternate" type="application/rss+xml" title="Devocionais · Igreja Evangélica Congregacional Conjunto Esperança" href="/feed.xml">' : ''}
 <link rel="icon" href="/favicon.ico" sizes="48x48">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preload" href="/assets/fonts/inter-v20-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -365,6 +399,17 @@ pages.forEach((pg) => {
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(path.join(dir, 'index.html'), render(pg));
 });
+// Calendário (.ics), índice de busca dos devocionais e feed RSS.
+fs.mkdirSync(path.join(OUT, 'agenda'), { recursive: true });
+events.filter((e) => e.agenda).forEach((e) => fs.writeFileSync(path.join(OUT, 'agenda', e.agenda.id + '.ics'), icsFile(e)));
+const normTxt = (s) => String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim();
+fs.writeFileSync(path.join(OUT, 'busca.json'), JSON.stringify(Object.fromEntries(posts.map((p) => [p.slug, normTxt([p.title, p.cat, p.author, p.ref, ...p.paragraphs].join(' '))]))));
+if (SITE) {
+  const rfc = (d) => new Date(d + 'T12:00:00-03:00').toUTCString();
+  const items = posts.slice(0, 20).map((p) => `<item><title>${esc(p.title)}</title><link>${SITE}/devocionais/${p.slug}/</link><guid isPermaLink="true">${SITE}/devocionais/${p.slug}/</guid><pubDate>${rfc(p.date)}</pubDate><dc:creator>${esc(p.author)}</dc:creator><category>${esc(p.cat)}</category><description>${esc(clip(p.paragraphs.slice(0, 2).join(' '), 300))}</description></item>`).join('\n');
+  fs.writeFileSync(path.join(OUT, 'feed.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/"><channel><title>Devocionais · Igreja Evangélica Congregacional Conjunto Esperança</title><link>${SITE}/devocionais/</link><description>Devocionais semanais da Igreja Evangélica Congregacional Conjunto Esperança, em Fortaleza.</description><language>pt-BR</language>${posts[0] ? `<lastBuildDate>${rfc(posts[0].date)}</lastBuildDate>` : ''}<atom:link href="${SITE}/feed.xml" rel="self" type="application/rss+xml"/>\n${items}\n</channel></rss>\n`);
+}
+
 // Página 404 própria (a Vercel serve public/404.html para endereços inexistentes). Fica fora do sitemap e com noindex.
 fs.writeFileSync(path.join(OUT, '404.html'), render({
   url: '/404.html', active: '', head: '', noindex: true, article: null,

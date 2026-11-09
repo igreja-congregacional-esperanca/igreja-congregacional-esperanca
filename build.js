@@ -84,9 +84,10 @@ function parsePost(file) {
   m[1].split('\n').forEach((line) => { const i = line.indexOf(':'); if (i > 0) meta[line.slice(0, i).trim()] = line.slice(i + 1).trim(); });
   for (const k of ['titulo', 'categoria', 'autor', 'data', 'referencia']) if (!meta[k]) throw new Error(`Campo "${k}" ausente em ${file}`);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(meta.data)) throw new Error('Data inválida em ' + file);
+  if (meta.atualizado && !/^\d{4}-\d{2}-\d{2}$/.test(meta.atualizado)) throw new Error('Campo "atualizado" inválido em ' + file);
   const slug = file.replace(/\.md$/, '').replace(/^\d{4}-\d{2}-\d{2}-/, '');
   const paragraphs = m[2].trim().split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
-  return { slug, title: meta.titulo, cat: meta.categoria, author: meta.autor, date: meta.data, ref: meta.referencia, paragraphs };
+  return { slug, title: meta.titulo, cat: meta.categoria, author: meta.autor, date: meta.data, updated: meta.atualizado || meta.data, ref: meta.referencia, paragraphs };
 }
 const posts = fs.readdirSync(path.join(ROOT, 'content/devocionais')).filter((f) => f.endsWith('.md')).map(parsePost)
   .sort((a, b) => b.date.localeCompare(a.date));
@@ -167,7 +168,7 @@ addPage({
 });
 posts.forEach((p) => addPage({
   url: `/devocionais/${p.slug}/`, active: 'devocionais', title: `${p.title} · Devocional · ${SHORT_BRAND}`, desc: clip(p.paragraphs.slice(0, 2).join(' '), 155),
-  article: { date: p.date, author: p.author, cat: p.cat },
+  article: { date: p.date, updated: p.updated, author: p.author, cat: p.cat },
   body: `<article><a class="back" href="/devocionais/">← Todos os devocionais</a><div style="margin-top:22px"><span class="tag">${esc(p.cat)}</span></div><h1>${esc(p.title)}</h1><div class="meta" style="margin-bottom:6px">${esc(p.author)} · ${fmt(p.date)}</div><div class="ref">${refHtml(p.ref)}</div>${p.paragraphs.map((x) => `<p>${esc(x)}</p>`).join('')}</article>`
 }));
 addPage({
@@ -267,7 +268,7 @@ const articleLd = (pg) => ({
   description: pg.desc,
   inLanguage: 'pt-BR',
   datePublished: pg.article.date,
-  dateModified: pg.article.date,
+  dateModified: pg.article.updated || pg.article.date,
   articleSection: pg.article.cat,
   author: { '@type': 'Person', name: pg.article.author.replace(/^Pr\.?\s+/i, '') },
   publisher: { '@type': 'Organization', name: BRAND, url: SITE + '/', logo: { '@type': 'ImageObject', url: SITE + '/logo-igreja.webp' } },
@@ -372,12 +373,28 @@ fs.writeFileSync(path.join(OUT, '404.html'), render({
 }));
 fs.writeFileSync(path.join(OUT, 'robots.txt'), 'User-agent: *\nAllow: /\n' + (SITE ? `Sitemap: ${SITE}/sitemap.xml\n` : ''));
 if (SITE) {
+  // llms.txt: resumo para assistentes de IA, só com dados que já estão no site (CHURCH, devocionais, vídeos).
+  const llms = [
+    `# ${BRAND}`, '',
+    `> Igreja evangélica congregacional em ${CHURCH.city} (${CHURCH.region}). Culto aos domingos, das 10h às 12h. Devocionais, vídeos e Bíblia online.`, '',
+    `Endereço: ${CHURCH.street}, ${CHURCH.city} - ${CHURCH.region}, CEP ${CHURCH.postalCode}.`, '',
+    '## Páginas', '',
+    `- [Início](${SITE}/): horários de culto, localização e contato`,
+    `- [Texto-base](${SITE}/texto-base/): o texto-base da igreja`,
+    `- [Devocionais](${SITE}/devocionais/): devocionais semanais`,
+    `- [Vídeos](${SITE}/videos/): mensagens, cultos e transmissões`, '',
+    '## Devocionais recentes', '',
+    ...posts.slice(0, 5).map((p) => `- [${p.title}](${SITE}/devocionais/${p.slug}/): ${p.ref}, ${p.author}`), '',
+    '## Optional', '',
+    `- [Bíblia (Almeida Revista e Corrigida, 1911)](${SITE}/biblia/): texto em domínio público`, ''
+  ].join('\n');
+  fs.writeFileSync(path.join(OUT, 'llms.txt'), llms);
   // lastmod só onde há data real (devocionais, texto-base, vídeos). Usar a data do build em tudo faria o Google ignorar o campo.
   const day = (s) => String(s || '').slice(0, 10);
   const newest = (list) => list.filter(Boolean).sort().pop() || '';
   const videoDay = newest(videos.map((v) => day(v.publishedAt)));
-  const LASTMOD = { '/': newest([posts[0] && posts[0].date, foundation.date, videoDay]), '/texto-base/': foundation.date, '/devocionais/': posts[0] ? posts[0].date : '', '/videos/': videoDay };
-  posts.forEach((p) => { LASTMOD[`/devocionais/${p.slug}/`] = p.date; });
+  const LASTMOD = { '/': newest([...posts.map((p) => p.updated), foundation.date, videoDay]), '/texto-base/': foundation.date, '/devocionais/': newest(posts.map((p) => p.updated)), '/videos/': videoDay };
+  posts.forEach((p) => { LASTMOD[`/devocionais/${p.slug}/`] = p.updated; });
   const lastmod = (pg) => (LASTMOD[pg.url] ? `<lastmod>${LASTMOD[pg.url]}</lastmod>` : '');
   // sitemap.xml é um índice com dois arquivos: páginas do site e Bíblia (1.189 capítulos + livros). Assim o Search Console mostra a indexação de cada grupo separadamente.
   const urlset = (list) => `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${list.map((pg) => `<url><loc>${SITE}${pg.url}</loc>${lastmod(pg)}</url>`).join('\n')}\n</urlset>\n`;

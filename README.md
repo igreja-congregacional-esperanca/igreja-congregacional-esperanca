@@ -13,7 +13,7 @@ O conteúdo de Mateus 11.28 aparece numa seção própria como **Texto-base da i
 ## Como publicar um novo devocional
 
 1. No GitHub, crie um arquivo em `content/devocionais/` chamado `AAAA-MM-DD-titulo-em-minusculas.md` (a parte depois da data vira o endereço: `/devocionais/titulo-em-minusculas/`).
-2. Copie o cabeçalho de um devocional existente (`titulo`, `categoria`, `autor`, `data`, `referencia` entre linhas `---`) e escreva os parágrafos separados por uma linha em branco.
+2. Copie o cabeçalho de um devocional existente (`titulo`, `categoria`, `autor`, `data`, `referencia` entre linhas `---`). Se corrigir o texto de um devocional já publicado, acrescente `atualizado: AAAA-MM-DD` (data real da edição); ela vira `dateModified` e `lastmod` e escreva os parágrafos separados por uma linha em branco.
 3. Salve (commit). A Vercel gera as páginas sozinha. Para testar localmente: `node build.js` e abra `public/`.
 
 ## Arquivos principais
@@ -38,6 +38,7 @@ O conteúdo de Mateus 11.28 aparece numa seção própria como **Texto-base da i
 - **Dados estruturados:** `Church` + `WebSite` na página inicial, `BreadcrumbList` em todas as páginas internas e `Article` em cada devocional (o autor sai do campo `autor`, sem o "Pr.")), `VideoObject` para cada vídeo em `/videos/` e `areaServed` (Fortaleza) no `Church`.
 - **Imagens:** `og-image.jpg` (fachada + logo) e os ícones foram gerados a partir de `logo-igreja.webp`, `logo-simbolo.webp` e da foto da fachada; se o logo mudar, refaça-os. Depois de trocar a imagem de compartilhamento, o WhatsApp e as redes podem demorar a atualizar por causa do cache.
 - **Sitemap:** `sitemap.xml` é um índice que aponta para `sitemap-paginas.xml` (site) e `sitemap-biblia.xml` (livros e capítulos), para acompanhar a indexação de cada grupo no Search Console. Envie só o `sitemap.xml`. `lastmod` só aparece onde há data real (devocionais, texto-base, vídeos e as páginas de listagem). Não use a data do build, senão o Google passa a ignorar o campo.
+- **llms.txt:** gerado pelo `build.js` (com `SITE_URL`) a partir de `CHURCH`, `BRAND` e dos devocionais; não precisa de edição manual.
 - **404:** `public/404.html` é gerado pelo `build.js`, com `noindex` e fora do sitemap.
 - **Bíblia:** os 1.189 capítulos estão indexáveis. É conteúdo em domínio público presente em muitos sites, então vale acompanhar no Search Console se essas páginas são de fato indexadas; se não forem, avalie marcar os capítulos como `noindex` e manter indexados só `/biblia/` e as páginas dos livros.
 - **Fora do código:** o nome, o endereço e o telefone da ficha do Google Maps (Perfil da Empresa) devem ser idênticos aos do site, e o site deve estar verificado no Google Search Console com o `sitemap.xml` enviado.

@@ -35,6 +35,7 @@ Documento vivo. **Atualize a cada sessão de trabalho** (ver `CLAUDE.md`): mova 
 
 | Prioridade | Item | Quem | Observação |
 |---|---|---|---|
+| Alta | **Mesclar o PR #18** (remove o botão Apple / Outlook .ics) | Dono do repo | Pedido de 09/11 |
 | Alta | **Mesclar o PR #16** (llms.txt com horários vindos de `eventos.json`, inclui quarta-feira) | Dono do repo | Produção ainda tem o texto antigo ("Culto aos domingos") |
 | Alta | **Reconectar o Git do link-bio**: GitHub > Settings > Applications > Vercel > Configure, incluir `Llink-bio`; depois Vercel > projeto `linkbio` > Settings > Git > Disconnect/Connect | Dono | Teste de deploy via Git falhou com `git_info_fail` em 09/11. A sessão do Claude só tem leitura no `Llink-bio` |
 | Alta | **Revogar os tokens da Vercel colados em conversas** (07, 08 e 09/11) | Dono | Vercel > Settings > Tokens. Nunca gravar tokens em arquivos do repositório |
@@ -75,6 +76,7 @@ Depois confira: `curl -s https://www.iecesperanca.com.br/ | grep msvalidate` dev
 - Aberto o PR #16 (`llms.txt` com horários dos cultos de `eventos.json`). Aguarda mesclagem.
 - Search Console, exportações de cobertura de 09/11: 6 páginas "Detectada, mas não indexada" (5 devocionais + `/videos/`, nunca rastreadas) e 1 "Página com redirecionamento" (`https://iecesperanca.com.br/`, esperado: redireciona para o `www`). Sem erros graves.
 - Criados `docs/registro-de-trabalho.md` e `CLAUDE.md`.
+- Pedido do dono: remover o botão "Apple / Outlook (.ics)" dos eventos. Feito no PR #18 (aguarda mesclagem); os arquivos `.ics` seguem sendo gerados, sem link. O botão Google Agenda permanece.
 
 ### 07 e 08/11/2026
 - Auditoria de SEO/GEO, meta do Bing e GTM publicados, diagnóstico da integração Vercel–GitHub (a Vercel parou de receber pushes depois das 17:35 UTC de 07/11) e deploys manuais como contorno.

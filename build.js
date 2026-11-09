@@ -421,7 +421,7 @@ if (SITE) {
   // llms.txt: resumo para assistentes de IA, só com dados que já estão no site (CHURCH, devocionais, vídeos).
   const llms = [
     `# ${BRAND}`, '',
-    `> Igreja evangélica congregacional em ${CHURCH.city} (${CHURCH.region}). Culto aos domingos, das 10h às 12h. Devocionais, vídeos e Bíblia online.`, '',
+    `> Igreja evangélica congregacional em ${CHURCH.city} (${CHURCH.region}). Cultos: ${events.filter((e) => e.agenda).map((e) => `${e.dia.toLowerCase()} (${e.titulo.toLowerCase()}), ${e.detalhe.split(' · ')[0]}`).join('; ')}. Devocionais, vídeos e Bíblia online.`, '',
     `Endereço: ${CHURCH.street}, ${CHURCH.city} - ${CHURCH.region}, CEP ${CHURCH.postalCode}.`, '',
     '## Páginas', '',
     `- [Início](${SITE}/): horários de culto, localização e contato`,

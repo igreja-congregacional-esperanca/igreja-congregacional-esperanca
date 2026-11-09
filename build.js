@@ -22,8 +22,8 @@ const CHURCH = {
   postalCode: '60763-474',
   lat: -3.8139266,
   lng: -38.5900581,
-  // Só o culto de domingo (o de quarta está "a confirmar" em eventos.json e fica de fora até haver horário).
-  hours: [{ day: 'Sunday', opens: '10:00', closes: '12:00' }]
+  // Domingo (celebração) e quarta-feira (doutrina, 19h30). Sem horário de término divulgado para quarta, usa 21:00 como estimativa.
+  hours: [{ day: 'Sunday', opens: '10:00', closes: '12:00' }, { day: 'Wednesday', opens: '19:30', closes: '21:00' }]
 };
 const OG_ALT = 'Fachada da igreja e logotipo da Igreja Evangélica Congregacional Conjunto Esperança, em Fortaleza';
 
